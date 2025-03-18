@@ -5,9 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FinanceApp.API.Controllers
 {
+    [Authorize] // Exige autenticação JWT
     [Route("api/[controller]")]
     [ApiController]
     public class TransactionController : ControllerBase
