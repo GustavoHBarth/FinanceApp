@@ -3,31 +3,27 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Adicionando conexão com MySQL
+builder.Services.AddDbContext<FinanceDbContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Configuração do Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Adicionar a string de conexão para o banco de dados
-var mySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<FinanceDbContext>(options =>
-    options.UseMySql(mySqlConnection, ServerVersion.AutoDetect(mySqlConnection)));
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuração do pipeline de requisições
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); 
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
