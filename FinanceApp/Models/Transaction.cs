@@ -12,7 +12,7 @@ namespace FinanceApp.API.Models
         public DateTime Date { get; set; }
 
         // Adicionando UserId (relacionamento com o usuário)
-        public string UserId { get; set; }
-        public User User { get; set; } // Relacionamento com o modelo User
+        public string? UserId { get; set; }
+        public User? User { get; set; } // Relacionamento com o modelo User
     }
 }
