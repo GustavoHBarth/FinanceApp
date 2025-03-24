@@ -107,7 +107,7 @@ namespace FinanceApp.API.Controllers
             // Salva as alterações no banco de dados
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Retorna sucesso sem conteúdo, pois a transação foi atualizada
+            return Ok(new { message = "Transação atualizada com sucesso!" });
         }
 
         [HttpDelete("{id}")]
@@ -138,7 +138,7 @@ namespace FinanceApp.API.Controllers
             _context.Transactions.Remove(transaction);
             await _context.SaveChangesAsync();
 
-            return NoContent(); // Retorna sucesso sem conteúdo, pois a transação foi deletada
+            return Ok(new { message = "Transação excluída com sucesso!" });
         }
 
 
