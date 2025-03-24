@@ -11,7 +11,7 @@ namespace FinanceApp.API.Models
         [Required]
         public decimal Amount { get; set; }
 
-        [Required]
+       
         public string Category { get; set; }
 
         [Required]

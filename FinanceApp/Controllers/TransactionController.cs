@@ -23,6 +23,88 @@ namespace FinanceApp.API.Controllers
             _context = context;
         }
 
+        //EndPoint para filtrar transações
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetTransactionsByFilter(
+      DateTime? startDate,
+      DateTime? endDate,
+      decimal? minAmount,
+      decimal? maxAmount,
+      string category = null)
+
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
+
+            var transactions = _context.Transactions.Where(t => t.UserId == userIdString).AsQueryable();
+
+            if (startDate.HasValue)
+            {
+                transactions = transactions.Where(t => t.Date >= startDate);
+            }
+
+            if (endDate.HasValue)
+            {
+                transactions = transactions.Where(t => t.Date <= endDate);
+            }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                transactions = transactions.Where(t => EF.Functions.Like(t.Category.ToLower(), $"%{category.ToLower()}%"));
+            }
+
+            if (minAmount.HasValue)
+            {
+                transactions = transactions.Where(t => t.Amount >= minAmount.Value);
+            }
+
+            if (maxAmount.HasValue)
+            {
+                transactions = transactions.Where(t => t.Amount <= maxAmount.Value);
+            }
+
+            // Verifica o valor do userId no resultado para garantir que não é um valor padrão
+            var result = await transactions.ToListAsync();
+
+            // Se não encontrar transações, pode ser útil retornar um status indicando que não há dados
+            if (result.Count == 0)
+            {
+                return NotFound("Nenhuma transação encontrada.");
+            }
+
+            return Ok(result);
+        }
+
+
+        //EndPoint para gerar o relatório de transações
+        [HttpGet("report")]
+        public async Task<IActionResult> GetTransactionReport(DateTime? startDate, DateTime? endDate, string category = null)
+        {
+            var transactions = _context.Transactions.AsQueryable();
+
+            // Aplica filtros se fornecidos
+            if (startDate.HasValue)
+                transactions = transactions.Where(t => t.Date >= startDate.Value);
+            if (endDate.HasValue)
+                transactions = transactions.Where(t => t.Date <= endDate.Value);
+            if (!string.IsNullOrEmpty(category))
+                transactions = transactions.Where(t => t.Category.Contains(category));
+
+            // Calcula o total de valor das transações
+            var totalAmount = await transactions.SumAsync(t => t.Amount);
+
+            // Retorna o relatório
+            return Ok(new
+            {
+                TotalAmount = totalAmount
+            });
+        }
+
+
         // GET: api/transaction
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
@@ -54,24 +136,26 @@ namespace FinanceApp.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Transaction>> CreateTransaction([FromBody] Transaction transaction)
         {
-            // Pega o UserId do JWT e associa à transação
+            // Pega o UserId do JWT
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userIdString))
             {
+                // Retorna um erro se o usuário não estiver autenticado
                 return Unauthorized("Usuário não autenticado.");
             }
 
-            // Não precisa mais de validação aqui, já que você está preenchendo UserId via JWT
+            // Associa o UserId ao objeto Transaction
             transaction.UserId = userIdString;
 
             // Adiciona a transação ao banco de dados
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
 
-            // Retorna a transação criada
+            // Retorna a transação criada, com um status 201 (Created)
             return CreatedAtAction(nameof(GetTransactions), new { id = transaction.Id }, transaction);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTransaction(int id, Transaction transaction)
@@ -140,6 +224,9 @@ namespace FinanceApp.API.Controllers
 
             return Ok(new { message = "Transação excluída com sucesso!" });
         }
+
+
+
 
 
     }
