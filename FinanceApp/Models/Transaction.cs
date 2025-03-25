@@ -1,4 +1,5 @@
 ﻿using FinanceApp.Models;
+using FinanceApp.Models.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
 
@@ -11,8 +12,8 @@ namespace FinanceApp.API.Models
         [Required]
         public decimal Amount { get; set; }
 
-       
         public string Category { get; set; }
+       // public TransactionCategory Category { get; set; }
 
         [Required]
         public string Description { get; set; }

@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System;
+using iText.Kernel.Pdf;
+using iText.Layout.Element;
+using System.Text;
+using iText.Layout;
+
 
 namespace FinanceApp.API.Controllers
 {
@@ -22,6 +27,92 @@ namespace FinanceApp.API.Controllers
         {
             _context = context;
         }
+
+        // 🔹 EXPORTAÇÃO PARA CSV
+        [HttpGet("report/csv")]
+        public async Task<IActionResult> GetTransactionReportCsv(DateTime? startDate, DateTime? endDate)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
+
+            var transactions = _context.Transactions
+                .Where(t => t.UserId == userIdString)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+                transactions = transactions.Where(t => t.Date >= startDate.Value);
+            if (endDate.HasValue)
+                transactions = transactions.Where(t => t.Date <= endDate.Value);
+
+            var transactionList = await transactions.ToListAsync();
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Data,Categoria,Descrição,Valor");
+
+            foreach (var transaction in transactionList)
+            {
+                csv.AppendLine($"{transaction.Date:yyyy-MM-dd},{transaction.Category},{transaction.Description},{transaction.Amount}");
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            return File(bytes, "text/csv", "relatorio_transacoes.csv");
+        }
+
+        // 🔹 EXPORTAÇÃO PARA PDF
+        [HttpGet("report/pdf")]
+        public async Task<IActionResult> GetTransactionReportPdf(DateTime? startDate, DateTime? endDate)
+        {
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
+
+            var transactions = _context.Transactions
+                .Where(t => t.UserId == userIdString)
+                .AsQueryable();
+
+            if (startDate.HasValue)
+                transactions = transactions.Where(t => t.Date >= startDate.Value);
+            if (endDate.HasValue)
+                transactions = transactions.Where(t => t.Date <= endDate.Value);
+
+            var transactionList = await transactions.ToListAsync();
+
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new PdfWriter(stream))
+                {
+                    using (var pdf = new PdfDocument(writer))
+                    {
+                        var document = new Document(pdf);
+                        document.Add(new Paragraph("Relatório de Transações"));
+
+                        var table = new Table(4);
+                        table.AddHeaderCell("Data");
+                        table.AddHeaderCell("Categoria");
+                        table.AddHeaderCell("Descrição");
+                        table.AddHeaderCell("Valor");
+
+                        foreach (var transaction in transactionList)
+                        {
+                            table.AddCell(transaction.Date.ToString("yyyy-MM-dd"));
+                            table.AddCell(transaction.Category);
+                            table.AddCell(transaction.Description);
+                            table.AddCell(transaction.Amount.ToString("C"));
+                        }
+
+                        document.Add(table);
+                    }
+                }
+
+                return File(stream.ToArray(), "application/pdf", "relatorio_transacoes.pdf");
+            }
+        }
+
 
         //EndPoint para filtrar transações
         [HttpGet("filter")]
@@ -82,27 +173,75 @@ namespace FinanceApp.API.Controllers
 
         //EndPoint para gerar o relatório de transações
         [HttpGet("report")]
-        public async Task<IActionResult> GetTransactionReport(DateTime? startDate, DateTime? endDate, string category = null)
+        public async Task<IActionResult> GetTransactionReport(DateTime? startDate, DateTime? endDate)
         {
-            var transactions = _context.Transactions.AsQueryable();
+            var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            // Aplica filtros se fornecidos
+            if (string.IsNullOrEmpty(userIdString))
+            {
+                return Unauthorized("Usuário não autenticado.");
+            }
+
+            var transactions = _context.Transactions
+                .Where(t => t.UserId == userIdString)
+                .AsQueryable();
+
+            // Aplicar filtros de data
             if (startDate.HasValue)
                 transactions = transactions.Where(t => t.Date >= startDate.Value);
             if (endDate.HasValue)
                 transactions = transactions.Where(t => t.Date <= endDate.Value);
-            if (!string.IsNullOrEmpty(category))
-                transactions = transactions.Where(t => t.Category.Contains(category));
 
-            // Calcula o total de valor das transações
-            var totalAmount = await transactions.SumAsync(t => t.Amount);
+            // Verificar se há transações antes de calcular
+            var transactionList = await transactions.ToListAsync();
+            if (!transactionList.Any())
+            {
+                return Ok(new
+                {
+                    TotalAmount = 0,
+                    DailyAverage = 0,
+                    WeeklyAverage = 0,
+                    MonthlyAverage = 0,
+                    Categories = new List<object>()
+                });
+            }
 
-            // Retorna o relatório
+            // Total geral
+            var totalAmount = transactionList.Sum(t => t.Amount);
+
+            // Agrupamento por categoria
+            var categoryReport = transactionList
+                .GroupBy(t => t.Category)
+                .Select(g => new
+                {
+                    Category = g.Key.ToString(), // Converte corretamente o enum para string
+                    TotalAmount = g.Sum(t => t.Amount)
+                })
+                .ToList();
+
+            // Calcular intervalo de dias
+            var firstDate = transactionList.Min(t => t.Date);
+            var lastDate = transactionList.Max(t => t.Date);
+            var totalDays = (lastDate - firstDate).TotalDays + 1;
+
+            // Evitar divisão por zero
+            totalDays = totalDays > 0 ? totalDays : 1;
+
+            // Cálculo das médias
+            var dailyAvg = totalAmount / (decimal)totalDays;
+            var weeklyAvg = dailyAvg * 7;
+            var monthlyAvg = dailyAvg * 30;
+
             return Ok(new
             {
-                TotalAmount = totalAmount
+                TotalAmount = totalAmount,
+                DailyAverage = dailyAvg,
+                WeeklyAverage = weeklyAvg,
+                MonthlyAverage = monthlyAvg,
+                Categories = categoryReport
             });
         }
+
 
 
         // GET: api/transaction
