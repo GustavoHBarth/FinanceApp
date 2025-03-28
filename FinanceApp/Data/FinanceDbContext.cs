@@ -28,8 +28,8 @@ namespace FinanceApp.API.Data
             modelBuilder.Entity<Balance>()
                 .HasOne(b => b.User)
                 .WithOne() // Um usuário tem um único saldo
-                .HasForeignKey<Balance>(b => b.UserId)
-                .OnDelete(DeleteBehavior.Cascade); // Se o usuário for deletado, o saldo também será
+                .HasForeignKey<Balance>(b => b.BalanceUserId) // Alterado para BalanceUserId
+                .OnDelete(DeleteBehavior.Cascade); // Se o usuário for deletado, o saldo também será deletado
         }
     }
 }
