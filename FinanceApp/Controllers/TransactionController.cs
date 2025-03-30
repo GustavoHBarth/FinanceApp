@@ -61,7 +61,7 @@ namespace FinanceApp.API.Controllers
             return File(bytes, "text/csv", "relatorio_transacoes.csv");
         }
 
-        // 🔹 EXPORTAÇÃO PARA PDF
+        // EXPORTAÇÃO PARA PDF
         [HttpGet("report/pdf")]
         public async Task<IActionResult> GetTransactionReportPdf(DateTime? startDate, DateTime? endDate)
         {
@@ -70,6 +70,12 @@ namespace FinanceApp.API.Controllers
             {
                 return Unauthorized("Usuário não autenticado.");
             }
+
+            // Buscar o saldo atual do usuário na tabela Balances
+            var balance = await _context.Balances
+                .Where(b => b.BalanceUserId == userIdString)
+                .Select(b => b.Amount)
+                .FirstOrDefaultAsync();
 
             var transactions = _context.Transactions
                 .Where(t => t.UserId == userIdString)
@@ -81,6 +87,8 @@ namespace FinanceApp.API.Controllers
                 transactions = transactions.Where(t => t.Date <= endDate.Value);
 
             var transactionList = await transactions.ToListAsync();
+            var totalAmount = transactionList.Sum(t => t.Amount);
+            var finalValue = balance - totalAmount; // Cálculo do valor final
 
             using (var stream = new MemoryStream())
             {
@@ -89,8 +97,14 @@ namespace FinanceApp.API.Controllers
                     using (var pdf = new PdfDocument(writer))
                     {
                         var document = new Document(pdf);
-                        document.Add(new Paragraph("Relatório de Transações"));
+                        document.Add(new Paragraph("Relatório de Transações").SetFontSize(18).SetBold());
 
+                        // Adicionando informações gerais
+                        document.Add(new Paragraph($"Saldo Atual: {balance:C}"));
+                        document.Add(new Paragraph($"Total de Gastos: {totalAmount:C}"));
+                        document.Add(new Paragraph($"Valor Final: {finalValue:C}").SetBold());
+
+                        // Criando a tabela com as transações
                         var table = new Table(4);
                         table.AddHeaderCell("Data");
                         table.AddHeaderCell("Categoria");
@@ -109,10 +123,12 @@ namespace FinanceApp.API.Controllers
                     }
                 }
 
-                return File(stream.ToArray(), "application/pdf", "relatorio_transacoes.pdf");
+                var fileName = $"relatorio_{DateTime.Now:yyyyMMddHHmmss}.pdf";
+                var pdfBytes = stream.ToArray();
+
+                return File(pdfBytes, "application/pdf", fileName);
             }
         }
-
 
         //EndPoint para filtrar transações
         [HttpGet("filter")]
@@ -182,6 +198,12 @@ namespace FinanceApp.API.Controllers
                 return Unauthorized("Usuário não autenticado.");
             }
 
+            // Buscar saldo do usuário
+            var balance = await _context.Balances
+                .FirstOrDefaultAsync(b => b.BalanceUserId == userIdString);
+
+            decimal currentBalance = balance?.Amount ?? 0; // Se não existir, assume 0
+
             var transactions = _context.Transactions
                 .Where(t => t.UserId == userIdString)
                 .AsQueryable();
@@ -202,11 +224,13 @@ namespace FinanceApp.API.Controllers
                     DailyAverage = 0,
                     WeeklyAverage = 0,
                     MonthlyAverage = 0,
+                    Balance = currentBalance,
+                    FinalValue = currentBalance, // Se não houver transações, o saldo final é o próprio saldo
                     Categories = new List<object>()
                 });
             }
 
-            // Total geral
+            // Total geral das transações
             var totalAmount = transactionList.Sum(t => t.Amount);
 
             // Agrupamento por categoria
@@ -214,7 +238,7 @@ namespace FinanceApp.API.Controllers
                 .GroupBy(t => t.Category)
                 .Select(g => new
                 {
-                    Category = g.Key.ToString(), // Converte corretamente o enum para string
+                    Category = g.Key.ToString(),
                     TotalAmount = g.Sum(t => t.Amount)
                 })
                 .ToList();
@@ -232,15 +256,21 @@ namespace FinanceApp.API.Controllers
             var weeklyAvg = dailyAvg * 7;
             var monthlyAvg = dailyAvg * 30;
 
+            // Calcular o valor final (saldo - transações)
+            var finalValue = currentBalance - totalAmount;
+
             return Ok(new
             {
                 TotalAmount = totalAmount,
                 DailyAverage = dailyAvg,
                 WeeklyAverage = weeklyAvg,
                 MonthlyAverage = monthlyAvg,
+                Balance = currentBalance,
+                FinalValue = finalValue,
                 Categories = categoryReport
             });
         }
+
 
 
 

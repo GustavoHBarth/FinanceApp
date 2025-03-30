@@ -2,6 +2,7 @@
 using FinanceApp.Models.Enums;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace FinanceApp.API.Models
 {
@@ -23,7 +24,7 @@ namespace FinanceApp.API.Models
 
 
         // Adicionando UserId (relacionamento com o usuário)
-        [Required]
+        [JsonIgnore]
         public string? UserId { get; set; }
         public User? User { get; set; } // Relacionamento com o modelo User
     }
