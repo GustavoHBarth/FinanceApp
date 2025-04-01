@@ -11,6 +11,16 @@ using FinanceApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:54513") // Altere para a porta do seu frontend
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Adicionando conexão com MySQL
 builder.Services.AddDbContext<FinanceDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -75,6 +85,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
+
+app.UseCors("AllowFrontend");
 
 if (app.Environment.IsDevelopment())
 {

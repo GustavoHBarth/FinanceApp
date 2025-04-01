@@ -5,6 +5,10 @@ VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp", "FinanceApp\FinanceApp.csproj", "{AC418373-5B72-468F-9208-5AD96886B70D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-app", "client-app", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "financeappfrontend", "FinanceAppFrontend\financeappfrontend.esproj", "{A22E5421-B301-AD1C-C961-F872027DE942}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +19,18 @@ Global
 		{AC418373-5B72-468F-9208-5AD96886B70D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC418373-5B72-468F-9208-5AD96886B70D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC418373-5B72-468F-9208-5AD96886B70D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A22E5421-B301-AD1C-C961-F872027DE942}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A22E5421-B301-AD1C-C961-F872027DE942} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9B908AEC-0A05-434B-A458-FAB5A4383083}
