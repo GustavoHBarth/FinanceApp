@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp", "FinanceApp\Fi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-app", "client-app", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "financeappfrontend", "FinanceAppFrontend\financeappfrontend.esproj", "{A22E5421-B301-AD1C-C961-F872027DE942}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "financeappfrontend", "financeappfrontend\financeappfrontend.esproj", "{A22E5421-B301-AD1C-C961-F872027DE942}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
