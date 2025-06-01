@@ -1,0 +1,88 @@
+﻿@page "/contas/edit/{id:guid}"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IContasService _contaService
+@using FinanceApp.Application.DTOs
+@using FinanceApp.Domain.Enums
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@using FinanceApp.Application.Services.Interfaces
+
+<h1>Editar Conta</h1>
+
+@if (contaEdit == null)
+{
+    <p><em>Carregando...</em></p>
+}
+else
+{
+    <EditForm Model="contaEdit" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="Categoria" class="form-label">Categoria</label>
+            <InputSelect id="Categoria" class="form-select" @bind-Value="contaEdit.Categoria">
+                <option value="">-- Selecione a Categoria --</option>
+                @foreach (var categoria in categorias)
+                {
+                    <option value="@categoria">@categoria.ToString()</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => contaEdit.Categoria)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Descricao" class="form-label">Descrição</label>
+            <InputText id="Descricao" class="form-control" @bind-Value="contaEdit.Descricao" />
+            <ValidationMessage For="@(() => contaEdit.Descricao)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Data" class="form-label">Data</label>
+            <InputDate id="Data" class="form-control" @bind-Value="contaEdit.Data" />
+            <ValidationMessage For="@(() => contaEdit.Data)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Valor" class="form-label">Valor</label>
+            <InputNumber id="Valor" class="form-control" @bind-Value="contaEdit.Valor" />
+            <ValidationMessage For="@(() => contaEdit.Valor)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <a href="/contas" class="btn btn-secondary ms-2">Cancelar</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public Guid id { get; set; }
+
+    private UpdateContaDto contaEdit;
+    private IEnumerable<CategoriaConta> categorias;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categorias = Enum.GetValues(typeof(CategoriaConta)).Cast<CategoriaConta>();
+
+        var conta = await _contaService.GetByIdAsync(id);
+        if (conta != null)
+        {
+            contaEdit = new UpdateContaDto
+            {
+                Id = conta.Id,
+                Descricao = conta.Descricao,
+                Valor = conta.Valor,
+                Categoria = conta.Categoria,
+                Data = conta.Data
+            };
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await _contaService.UpdateAsync(contaEdit);
+        Navigation.NavigateTo("/contas");
+    }
+}

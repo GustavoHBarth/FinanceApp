@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156 d17.13
+VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp.API", "FinanceApp.API\FinanceApp.API.csproj", "{C8101D8C-95AE-4727-AB2C-B3BDD7181F41}"
 EndProject
@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp.Application", "FinanceApp.Application\FinanceApp.Application.csproj", "{E67C9341-E277-483C-9F47-0608076067DA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp.Data", "FinanceApp.Data\FinanceApp.Data.csproj", "{61558A50-094A-4528-8DF2-E06ADB8B7389}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp.UI.Web", "FinanceApp.UI.Web\FinanceApp.UI.Web\FinanceApp.UI.Web.csproj", "{B7AF2C99-DBF8-4A1C-A5C3-F16AE1C2A18E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceApp.UI.Web.Client", "FinanceApp.UI.Web\FinanceApp.UI.Web.Client\FinanceApp.UI.Web.Client.csproj", "{4ACCE09A-B23B-4935-A1CD-1200AF92273B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{61558A50-094A-4528-8DF2-E06ADB8B7389}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61558A50-094A-4528-8DF2-E06ADB8B7389}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61558A50-094A-4528-8DF2-E06ADB8B7389}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7AF2C99-DBF8-4A1C-A5C3-F16AE1C2A18E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7AF2C99-DBF8-4A1C-A5C3-F16AE1C2A18E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7AF2C99-DBF8-4A1C-A5C3-F16AE1C2A18E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7AF2C99-DBF8-4A1C-A5C3-F16AE1C2A18E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ACCE09A-B23B-4935-A1CD-1200AF92273B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ACCE09A-B23B-4935-A1CD-1200AF92273B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ACCE09A-B23B-4935-A1CD-1200AF92273B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ACCE09A-B23B-4935-A1CD-1200AF92273B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,4 +1,4 @@
-using FinanceApp.Data.Context;
+using FinanceApp.Data;
 using Microsoft.EntityFrameworkCore;
 using FinanceApp.Application.Services.Interfaces;
 using FinanceApp.Application.Services;
@@ -12,9 +12,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<UnitOfWork>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IContasService, ContasService>();
-
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+builder.Services.AddScoped<IContasService, ContasService>();
 
 // Unit of Work: o próprio DbContext implementa IUnitOfWork
 builder.Services.AddScoped<IUnitOfWork>(provider =>
