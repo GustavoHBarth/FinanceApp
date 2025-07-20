@@ -1,18 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using FinanceApp.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using FinanceApp.Data.Interfaces;
-using FinanceApp.Domain.Entities;
+using FinanceApp.Domain.Entities.BaseEntities;
+using FinanceApp.Data.Context;
 
 namespace FinanceApp.Data.Repositories
 {
-    public class Repository<T> : IRepository<T> where T : Entity
+    public class Repository<T> : IRepository<T> where T : BaseEntity
     {
-        protected readonly IUnitOfWork _context;
+        protected readonly ApplicationDbContext _context;
         protected readonly DbSet<T> _dbSet;
 
-        public Repository(IUnitOfWork context)
+        public Repository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = context.Set<T>();
@@ -25,7 +24,7 @@ namespace FinanceApp.Data.Repositories
             await Commit();
         }
 
-        // Adiciona múltiplas entidade e salva automaticamente
+        // Adiciona múltiplas entidades e salva automaticamente
         public virtual async Task AddRange(IEnumerable<T> entities)
         {
             await _dbSet.AddRangeAsync(entities);
@@ -42,7 +41,7 @@ namespace FinanceApp.Data.Repositories
         // Aplica soft delete na entidade
         public virtual async Task Delete(T entity)
         {
-            entity.SysDeleted = true;
+            entity.Delete();
             _context.Entry(entity).State = EntityState.Modified;
             await Commit();
         }
@@ -53,48 +52,49 @@ namespace FinanceApp.Data.Repositories
             var entity = await GetById(id);
             if (entity != null)
             {
-                entity.SysDeleted = true;
+                entity.Delete();
                 _context.Entry(entity).State = EntityState.Modified;
                 await Commit();
             }
         }
-
 
         // Salva todas as alterações no contexto
         public virtual async Task Commit()
         {
             try
             {
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException dbEx)
+            catch (Exception ex)
             {
-                throw new Exception($"Erro ao salvar mudanças no banco. {dbEx.InnerException?.Message ?? dbEx.Message}");
+                throw new Exception($"Erro ao salvar mudanças no banco. {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
         // Verifica se alguma entidade atende ao critério especificado
         public virtual async Task<bool> Exists(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(e => !e.SysDeleted).AnyAsync(predicate);
+            return await _dbSet.Where(e => !e.SysIsDeleted).AnyAsync(predicate);
         }
 
         // Retorna todas as entidades ativas
         public virtual IQueryable<T> GetAll()
         {
-            return _dbSet.Where(e => !e.SysDeleted);
+            return _dbSet.AsNoTracking()
+                .Where(e => !e.SysIsDeleted);
         }
 
         // Retorna uma entidade específica pelo ID (inclui as excluídas)
         public virtual async Task<T?> GetById(Guid id)
         {
-            return await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
+            return await _dbSet.AsNoTracking()
+                .FirstOrDefaultAsync(e => e.Id == id);
         }
 
         // Filtra entidades ativas baseado em um critério
         public virtual IQueryable<T> Where(Expression<Func<T, bool>> predicate)
         {
-            return _dbSet.Where(predicate).Where(e => !e.SysDeleted);
+            return _dbSet.Where(predicate).Where(e => !e.SysIsDeleted);
         }
     }
 }

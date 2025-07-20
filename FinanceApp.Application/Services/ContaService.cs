@@ -1,83 +1,79 @@
 ﻿using FinanceApp.Application.DTOs;
 using FinanceApp.Application.Services.Interfaces;
-using FinanceApp.Domain.Entites;
+using FinanceApp.Domain.Entities;
+using FinanceApp.Domain.Enums;
 using FinanceApp.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinanceApp.Application.Services
 {
-    public class ContasService : IContasService
+    public class ContaService : IContaService
     {
-        private readonly IRepository<Contas> _repository;
+        public readonly IRepository<Conta> _contaRepository;
 
-        public ContasService(IRepository<Contas> repository)
+        public ContaService(IRepository<Conta> contaRepository)
         {
-            _repository = repository;
+            _contaRepository = contaRepository;
         }
 
-
-        public async Task<IEnumerable<ReadContaDto>> GetAllAsync()
+        public async Task<List<ContaDTO>> GetContas()
         {
-            var contas = _repository.GetAll();
-            return contas.Select(c => new ReadContaDto
-            {
-                Id = c.Id,
-                Valor = c.Valor ?? 0m,
-                Descricao = c.Descricao ?? string.Empty,
-                Categoria = c.Categoria,
-                Data = c.Data
-            });
+            var contas = await _contaRepository
+                .GetAll()
+                .Select(c => new ContaDTO
+                {
+                    Id = c.Id,
+                    Title = c.Title,
+                    Descricao = c.Descricao,
+                    Valor = c.Valor,
+                    Data = c.Data,
+                    Categoria = (EnumCategoriaConta)c.Categoria
+                })
+                .ToListAsync();
+
+            return contas;
         }
 
-        public async Task<ReadContaDto> GetByIdAsync(Guid id)
+        public async Task<ContaDTO> GetContasById(Guid contaId)
         {
-            var c = await _repository.GetById(id);
-            if (c == null) return null;
+            var contas = await _contaRepository
+                .Where(c => c.Id == contaId)
+                .FirstOrDefaultAsync();
 
-            return new ReadContaDto
+            return contas == null ? null : new ContaDTO
             {
-                Id = c.Id,
-                Valor = c.Valor ?? 0m,
-                Descricao = c.Descricao ?? string.Empty,
-                Categoria = c.Categoria,
-                Data = c.Data
+                Id = contas.Id,
+                Title = contas.Title,
+                Descricao = contas.Descricao,
+                Valor = contas.Valor,
+                Data = contas.Data,
+                Categoria = (EnumCategoriaConta)contas.Categoria
             };
         }
 
-        public async Task<ReadContaDto> CreateAsync(CreateContaDto dto)
+        public async Task<ContaDTO> CreateContaAsync(CreateContaRequestDTO dto)
         {
-            var conta = new Contas
+            var conta = new Conta
             {
                 Id = Guid.NewGuid(),
-                Valor = dto.Valor,
+                Title = dto.Title,
                 Descricao = dto.Descricao,
-                Categoria = dto.Categoria,
-                Data = dto.Data
+                Valor = dto.Valor,
+                Data = dto.Data,
+                Categoria = (EnumCategoriaConta)dto.Categoria
             };
-            await _repository.Add(conta);
-            await _repository.Commit();
 
-            return await GetByIdAsync(conta.Id);
-        }
+            await _contaRepository.Add(conta);
 
-        public async Task UpdateAsync(UpdateContaDto dto)
-        {
-            var conta = await _repository.GetById(dto.Id);
-            if (conta == null) return;
-
-            conta.Valor = dto.Valor;
-            conta.Descricao = dto.Descricao;
-            conta.Categoria = dto.Categoria;
-            conta.Data = dto.Data;
-
-            await _repository.Update(conta);
-            await _repository.Commit();
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            await _repository.DeleteById(id);
-            await _repository.Commit();
+            return new ContaDTO
+            {
+                Id = conta.Id,
+                Title = conta.Title,
+                Descricao = conta.Descricao,
+                Valor = conta.Valor,
+                Data = conta.Data,
+                Categoria = (EnumCategoriaConta)conta.Categoria
+            };
         }
     }
 }

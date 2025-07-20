@@ -11,4 +11,9 @@
     <ProjectReference Include="..\FinanceApp.Domain\FinanceApp.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+    <Folder Include="Mapper\" />
+  </ItemGroup>
+
 </Project>
