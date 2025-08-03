@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-
 namespace FinanceApp.Data.Interfaces
 {
     public interface IUnitOfWork

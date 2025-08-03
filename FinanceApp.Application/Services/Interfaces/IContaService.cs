@@ -4,8 +4,10 @@ namespace FinanceApp.Application.Services.Interfaces
 {
     public interface IContaService
     {
-        Task<List<ContaDTO>> GetContas();
-        Task<ContaDTO> CreateContaAsync(CreateContaRequestDTO dto);
-        Task<ContaDTO> GetContasById(Guid contaId);
+        Task<List<ContaDTO>> GetContas(Guid userId);
+        Task<ContaDTO> CreateContaAsync(CreateContaRequestDTO dto, Guid userId);
+        Task<ContaDTO> GetContasById(Guid contaId, Guid userId);
+        Task<ContaDTO> UpdateContaAsync(Guid id, UpdateContaRequestDTO dto, Guid userId);
+        Task DeleteContaAsync(Guid id, Guid userId);
     }
 }

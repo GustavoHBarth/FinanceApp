@@ -14,9 +14,7 @@ namespace FinanceApp.Data.Context
             var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
             var connectionStringKey = environment switch
             {
-                "Production" => "DefaultConnection",
-                "Docker" => "DefaultConnection",
-                _ => "DefaultConnection"
+                "Development" => "DefaultConnection",
             };
 
             var connectionString = configuration.GetConnectionString(connectionStringKey);

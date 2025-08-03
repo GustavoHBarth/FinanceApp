@@ -1,10 +1,9 @@
-﻿using FinanceApp.Domain.Enums;
+using FinanceApp.Domain.Enums;
 
 namespace FinanceApp.Application.DTOs
 {
-    public class ContaDTO
+    public class UpdateContaRequestDTO
     {
-        public Guid Id { get; set; }
         public string Titulo { get; set; }
         public string? Descricao { get; set; }
         public decimal Valor { get; set; }
@@ -18,7 +17,5 @@ namespace FinanceApp.Application.DTOs
         public int? TotalParcelas { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
     }
 }

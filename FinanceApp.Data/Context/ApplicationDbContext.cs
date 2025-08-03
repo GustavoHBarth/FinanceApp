@@ -7,6 +7,9 @@ namespace FinanceApp.Data.Context
     public class ApplicationDbContext : DbContext
     {
         public DbSet<Conta> Contas { get; set; }
+        public DbSet<Receita> Receitas { get; set; }
+        public DbSet<ResumoMensal> ResumosMensais { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

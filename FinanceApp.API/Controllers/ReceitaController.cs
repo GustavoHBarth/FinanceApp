@@ -1,4 +1,4 @@
-﻿using FinanceApp.Application.DTOs;
+using FinanceApp.Application.DTOs;
 using FinanceApp.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,101 +10,87 @@ namespace FinanceApp.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class ContaController : ControllerBase
+    public class ReceitaController : ControllerBase
     {
-        private readonly IContaService _contaService;
+        private readonly IReceitaService _receitaService;
 
-        public ContaController(IContaService contaService)
+        public ReceitaController(IReceitaService receitaService)
         {
-            _contaService = contaService;
+            _receitaService = receitaService;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetContas()
+        public async Task<IActionResult> GetReceitas()
         {
-            // Verificar se essa implementação deve estar aqui
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var contas = await _contaService.GetContas(userGuid);
+            var receitas = await _receitaService.GetReceitas(userGuid);
 
-            return Ok(new ApiResponse<List<ContaDTO>>
+            return Ok(new ApiResponse<List<ReceitaDTO>>
             {
                 Success = true,
-                Data = contas
+                Data = receitas
             });
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetContaById(Guid id)
+        public async Task<IActionResult> GetReceitaById(Guid id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var contas = await _contaService.GetContasById(id, userGuid);
+            var receita = await _receitaService.GetReceitaById(id, userGuid);
 
-            return Ok(new ApiResponse<ContaDTO>
+            return Ok(new ApiResponse<ReceitaDTO>
             {
                 Success = true,
-                Data = contas
+                Data = receita
             });
-
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateConta([FromBody] CreateContaRequestDTO dto)
+        public async Task<IActionResult> CreateReceita([FromBody] CreateReceitaRequestDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            // Validação de parcelamento
-            if (dto.EhParcelado && (!dto.TotalParcelas.HasValue || dto.TotalParcelas.Value < 2))
-            {
-                return BadRequest(new ApiResponse<object>
-                {
-                    Success = false,
-                    Message = "Para conta parcelada, TotalParcelas deve ser maior que 1",
-                    Data = null
-                });
-            }
+            var receita = await _receitaService.CreateReceitaAsync(dto, userGuid);
 
-            var conta = await _contaService.CreateContaAsync(dto, userGuid);
-
-            return Ok(new ApiResponse<ContaDTO>
+            return Ok(new ApiResponse<ReceitaDTO>
             {
                 Success = true,
-                Data = conta
+                Data = receita
             });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateConta(Guid id, [FromBody] UpdateContaRequestDTO dto)
+        public async Task<IActionResult> UpdateReceita(Guid id, [FromBody] UpdateReceitaRequestDTO dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var conta = await _contaService.UpdateContaAsync(id, dto, userGuid);
+            var receita = await _receitaService.UpdateReceitaAsync(id, dto, userGuid);
 
-            return Ok(new ApiResponse<ContaDTO>
+            return Ok(new ApiResponse<ReceitaDTO>
             {
                 Success = true,
-                Data = conta
+                Data = receita
             });
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteConta(Guid id)
+        public async Task<IActionResult> DeleteReceita(Guid id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-
-            await _contaService.DeleteContaAsync(id, userGuid);
+            await _receitaService.DeleteReceitaAsync(id, userGuid);
 
             return Ok(new ApiResponse<object>
             {
@@ -113,4 +99,4 @@ namespace FinanceApp.API.Controllers
             });
         }
     }
-}
+} 
