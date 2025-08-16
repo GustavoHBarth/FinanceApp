@@ -8,7 +8,8 @@ namespace FinanceApp.Data.Context
         IEntityTypeConfiguration<Conta>,
         IEntityTypeConfiguration<Receita>,
         IEntityTypeConfiguration<ResumoMensal>,
-        IEntityTypeConfiguration<User>
+        IEntityTypeConfiguration<User>,
+        IEntityTypeConfiguration<Parcela>
     {
         public void Configure(EntityTypeBuilder<Conta> builder)
         {
@@ -23,9 +24,6 @@ namespace FinanceApp.Data.Context
             builder.Property(c => c.Categoria).IsRequired();
             builder.Property(c => c.Status).IsRequired();
             builder.Property(c => c.Recorrencia).IsRequired(false);
-            builder.Property(c => c.EhParcelado).IsRequired();
-            builder.Property(c => c.NumeroParcela).IsRequired(false);
-            builder.Property(c => c.TotalParcelas).IsRequired(false);
             builder.Property(c => c.NumeroDocumento).IsRequired(false);
             builder.Property(c => c.ContaBancariaId).IsRequired(false);
 
@@ -33,6 +31,12 @@ namespace FinanceApp.Data.Context
                .WithMany(u => u.Contas)
                .HasForeignKey(c => c.UserId)
                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relacionamento com parcelas - NO ACTION para evitar ciclos
+            builder.HasMany(c => c.Parcelas)
+                .WithOne(p => p.Conta)
+                .HasForeignKey(p => p.ContaId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
         public void Configure(EntityTypeBuilder<Receita> builder)
@@ -77,6 +81,37 @@ namespace FinanceApp.Data.Context
             builder.Property(u => u.PasswordHash).IsRequired(false);
 
             builder.HasIndex(u => u.Email).IsUnique();
+
+            // Relacionamento com parcelas - NO ACTION para evitar ciclos
+            builder.HasMany(u => u.Parcelas)
+                .WithOne(p => p.User)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+        }
+
+        public void Configure(EntityTypeBuilder<Parcela> builder)
+        {
+            builder.HasKey(p => p.Id);
+
+            builder.Property(p => p.ContaId).IsRequired();
+            builder.Property(p => p.NumeroParcela).IsRequired();
+            builder.Property(p => p.TotalParcelas).IsRequired();
+            builder.Property(p => p.ValorParcela).IsRequired();
+            builder.Property(p => p.DataVencimento).IsRequired();
+            builder.Property(p => p.Observacao).IsRequired(false);
+            builder.Property(p => p.UserId).IsRequired();
+
+            // Relacionamento com Conta - NO ACTION para evitar ciclos
+            builder.HasOne(p => p.Conta)
+                .WithMany(c => c.Parcelas)
+                .HasForeignKey(p => p.ContaId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Relacionamento com User - NO ACTION para evitar ciclos
+            builder.HasOne(p => p.User)
+                .WithMany(u => u.Parcelas)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

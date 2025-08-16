@@ -22,6 +22,6 @@ namespace FinanceApp.Domain.Entities
 
         public virtual ICollection<Conta> Contas { get; set; } = new List<Conta>();
         public virtual ICollection<Receita> Receitas { get; set; } = new List<Receita>();
-
+        public virtual ICollection<Parcela> Parcelas { get; set; } = new List<Parcela>();
     }
 }

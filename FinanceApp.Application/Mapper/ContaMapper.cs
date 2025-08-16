@@ -24,13 +24,16 @@ namespace FinanceApp.Application.Mapper
                 Categoria = entity.Categoria,
                 Status = entity.Status,
                 Recorrencia = entity.Recorrencia,
-                EhParcelado = entity.EhParcelado,
-                NumeroParcela = entity.NumeroParcela,
-                TotalParcelas = entity.TotalParcelas,
                 NumeroDocumento = entity.NumeroDocumento,
                 ContaBancariaId = entity.ContaBancariaId,
                 CreatedAt = entity.CreatedAt,
-                UpdatedAt = entity.UpdatedAt
+                UpdatedAt = entity.UpdatedAt,
+                
+                // Propriedades de parcela
+                EhParcelado = entity.EhParcelado,
+                TotalParcelas = entity.Parcelas?.Count,
+                DataPrimeiraParcela = entity.Parcelas?.OrderBy(p => p.DataVencimento).FirstOrDefault()?.DataVencimento,
+                Parcelas = entity.Parcelas?.Select(p => p.ToDTO()).ToList() ?? new List<ParcelaDTO>()
             };
 
             return dto;

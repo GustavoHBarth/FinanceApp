@@ -10,28 +10,32 @@ namespace FinanceApp.Application.Services
     public class ContaService : IContaService
     {
         public readonly IRepository<Conta> _contaRepository;
-        public readonly IContaParcelamentoService _parcelamentoService;
+        public readonly IRepository<Parcela> _parcelaRepository;
 
-        public ContaService(IRepository<Conta> contaRepository, IContaParcelamentoService parcelamentoService)
+        public ContaService(IRepository<Conta> contaRepository, IRepository<Parcela> parcelaRepository)
         {
             _contaRepository = contaRepository;
-            _parcelamentoService = parcelamentoService;
+            _parcelaRepository = parcelaRepository;
         }
 
-        public async Task<List<ContaDTO>> GetContas(Guid userId)
+        public async Task<List<ContaDTO>> GetContas(Guid userId, int? month = null, int? year = null)
         {
+            // Buscar TODAS as contas do usuário com suas parcelas
+            // O filtro por mês será feito no frontend baseado nas datas de vencimento das parcelas
             var contas = await _contaRepository
-                .Where(c => c.UserId == userId)
-                .Select(c => c.ToDTO())
+                .Where(c => c.UserId == userId && !c.SysIsDeleted)
+                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
                 .ToListAsync();
 
-            return contas;
+            // Converter para DTOs após incluir as parcelas
+            return contas.Select(c => c.ToDTO()).ToList();
         }
 
         public async Task<ContaDTO> GetContasById(Guid contaId, Guid userId)
         {
             var conta = await _contaRepository
                 .Where(c => c.Id == contaId && c.UserId == userId)
+                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
@@ -51,36 +55,32 @@ namespace FinanceApp.Application.Services
                 Categoria = dto.Categoria,
                 Status = dto.Status,
                 Recorrencia = dto.Recorrencia,
-                EhParcelado = dto.EhParcelado,
-                NumeroParcela = dto.NumeroParcela,
-                TotalParcelas = dto.TotalParcelas,
                 NumeroDocumento = dto.NumeroDocumento,
                 ContaBancariaId = dto.ContaBancariaId,
                 UserId = userId
             };
 
-            if (conta.EhParcelado && conta.TotalParcelas.HasValue && conta.TotalParcelas.Value > 1)
+            await _contaRepository.Add(conta);
+
+            // Se for parcelado, criar as parcelas automaticamente
+            if (dto.EhParcelado && dto.TotalParcelas.HasValue && dto.TotalParcelas.Value > 1)
             {
-                var parcelas = _parcelamentoService.GerarParcelas(conta);
+                var parcelas = GerarParcelasAutomaticamente(conta, dto.TotalParcelas.Value, dto.DataPrimeiraParcela ?? dto.Data);
                 
                 foreach (var parcela in parcelas)
                 {
-                    await _contaRepository.Add(parcela);
+                    await _parcelaRepository.Add(parcela);
                 }
-                
-                return parcelas.First().ToDTO();
             }
-            else
-            {
-                await _contaRepository.Add(conta);
-                return conta.ToDTO();
-            }
+
+            return conta.ToDTO();
         }
 
         public async Task<ContaDTO> UpdateContaAsync(Guid id, UpdateContaRequestDTO dto, Guid userId)
         {
             var conta = await _contaRepository
-                .Where(c => c.Id == id)
+                .Where(c => c.Id == id && c.UserId == userId)
+                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
@@ -92,9 +92,6 @@ namespace FinanceApp.Application.Services
             conta.Categoria = dto.Categoria;
             conta.Status = dto.Status;
             conta.Recorrencia = dto.Recorrencia;
-            conta.EhParcelado = dto.EhParcelado;
-            conta.NumeroParcela = dto.NumeroParcela;
-            conta.TotalParcelas = dto.TotalParcelas;
             conta.NumeroDocumento = dto.NumeroDocumento;
             conta.ContaBancariaId = dto.ContaBancariaId;
             conta.UserId = userId;
@@ -106,14 +103,72 @@ namespace FinanceApp.Application.Services
             return conta.ToDTO();
         }
 
-        public async Task DeleteContaAsync(Guid id, Guid userId)
+        public async Task DeleteContaAsync(Guid id, Guid userId, bool deleteParcelas = false)
         {
             var conta = await _contaRepository
-                .Where(c => c.Id == id)
+                .Where(c => c.Id == id && c.UserId == userId)
+                .Include(c => c.Parcelas) // Incluir parcelas para verificar se existem
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
-            await _contaRepository.Delete(conta);
+            // Se a conta tem parcelas e foi solicitado deletar todas
+            if (deleteParcelas && conta.Parcelas != null && conta.Parcelas.Any())
+            {
+                foreach (var parcela in conta.Parcelas)
+                {
+                    parcela.Delete();
+                    parcela.Update();
+                    await _parcelaRepository.Update(parcela);
+                }
+            }
+
+            conta.Delete(); 
+            conta.Update(); 
+
+            await _contaRepository.Update(conta); 
+        }
+
+        // Método para gerar parcelas automaticamente
+        private List<Parcela> GerarParcelasAutomaticamente(Conta conta, int totalParcelas, DateTime dataPrimeiraParcela)
+        {
+            var parcelas = new List<Parcela>();
+            var valorParcela = CalcularValorParcela(conta.Valor, totalParcelas);
+
+            for (int i = 1; i <= totalParcelas; i++)
+            {
+                var dataVencimento = CalcularDataVencimento(dataPrimeiraParcela, i);
+                
+                var parcela = new Parcela
+                {
+                    Id = Guid.NewGuid(),
+                    ContaId = conta.Id,
+                    NumeroParcela = i,
+                    TotalParcelas = totalParcelas,
+                    ValorParcela = valorParcela,
+                    DataVencimento = dataVencimento,
+                    Observacao = $"Parcela {i}/{totalParcelas}",
+                    UserId = conta.UserId
+                };
+
+                parcelas.Add(parcela);
+            }
+
+            return parcelas;
+        }
+
+        // Método para calcular valor de cada parcela
+        private decimal CalcularValorParcela(decimal valorTotal, int totalParcelas)
+        {
+            if (totalParcelas <= 0)
+                throw new ArgumentException("Total de parcelas deve ser maior que zero");
+
+            return Math.Round(valorTotal / totalParcelas, 2);
+        }
+
+        // Método para calcular data de vencimento de cada parcela
+        private DateTime CalcularDataVencimento(DateTime dataPrimeiraParcela, int numeroParcela)
+        {
+            return dataPrimeiraParcela.AddMonths(numeroParcela - 1);
         }
     }
 }

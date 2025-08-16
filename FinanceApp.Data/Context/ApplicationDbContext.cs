@@ -10,6 +10,7 @@ namespace FinanceApp.Data.Context
         public DbSet<Receita> Receitas { get; set; }
         public DbSet<ResumoMensal> ResumosMensais { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Parcela> Parcelas { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)

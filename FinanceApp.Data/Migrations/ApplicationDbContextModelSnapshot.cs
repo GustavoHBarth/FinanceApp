@@ -46,14 +46,8 @@ namespace FinanceApp.Data.Migrations
                     b.Property<string>("Descricao")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("EhParcelado")
-                        .HasColumnType("bit");
-
                     b.Property<string>("NumeroDocumento")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("NumeroParcela")
-                        .HasColumnType("int");
 
                     b.Property<int?>("Recorrencia")
                         .HasColumnType("int");
@@ -71,9 +65,6 @@ namespace FinanceApp.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TotalParcelas")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -88,6 +79,54 @@ namespace FinanceApp.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Contas");
+                });
+
+            modelBuilder.Entity("FinanceApp.Domain.Entities.Parcela", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ContaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataVencimento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("NumeroParcela")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observacao")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("SysDeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SysIsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TotalParcelas")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ValorParcela")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContaId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Parcelas");
                 });
 
             modelBuilder.Entity("FinanceApp.Domain.Entities.Receita", b =>
@@ -234,6 +273,25 @@ namespace FinanceApp.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceApp.Domain.Entities.Parcela", b =>
+                {
+                    b.HasOne("FinanceApp.Domain.Entities.Conta", "Conta")
+                        .WithMany("Parcelas")
+                        .HasForeignKey("ContaId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("FinanceApp.Domain.Entities.User", "User")
+                        .WithMany("Parcelas")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Conta");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("FinanceApp.Domain.Entities.Receita", b =>
                 {
                     b.HasOne("FinanceApp.Domain.Entities.User", "User")
@@ -245,9 +303,16 @@ namespace FinanceApp.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("FinanceApp.Domain.Entities.Conta", b =>
+                {
+                    b.Navigation("Parcelas");
+                });
+
             modelBuilder.Entity("FinanceApp.Domain.Entities.User", b =>
                 {
                     b.Navigation("Contas");
+
+                    b.Navigation("Parcelas");
 
                     b.Navigation("Receitas");
                 });

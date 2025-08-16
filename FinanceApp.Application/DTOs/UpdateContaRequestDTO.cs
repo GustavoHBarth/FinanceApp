@@ -12,10 +12,12 @@ namespace FinanceApp.Application.DTOs
         public EnumCategoriaConta Categoria { get; set; }
         public EnumStatusConta Status { get; set; }
         public EnumRecorrencia? Recorrencia { get; set; }
-        public bool EhParcelado { get; set; }
-        public int? NumeroParcela { get; set; }
-        public int? TotalParcelas { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
+        
+        // Propriedades de parcelamento simplificadas
+        public bool EhParcelado { get; set; }
+        public int? TotalParcelas { get; set; }
+        public DateTime? DataPrimeiraParcela { get; set; }
     }
 }

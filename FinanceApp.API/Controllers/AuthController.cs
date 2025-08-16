@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace FinanceApp.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("auth")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;

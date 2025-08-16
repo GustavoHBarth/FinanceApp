@@ -4,6 +4,8 @@ using FinanceApp.Data.Repositories;
 using FinanceApp.Domain.Interfaces;
 using FinanceApp.Data.Context;
 using FinanceApp.API.Extensions;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IContaService, ContaService>();
 builder.Services.AddScoped<IReceitaService, ReceitaService>();
-builder.Services.AddScoped<IContaParcelamentoService, ContaParcelamentoService>();
+builder.Services.AddScoped<IParcelaService, ParcelaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Configuração do banco de dados
@@ -20,35 +22,50 @@ builder.Services.AddFinanceAppDatabase(builder.Configuration);
 // Configuração do JWT
 builder.Services.ConfigureJsonWebToken(builder.Configuration);
 
+// CORS para o frontend em http://localhost:5173
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+// Configuração de controllers
 builder.Services.AddControllers();
+
+// Configuração do Swagger com JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
+    c.SwaggerDoc("v1", new OpenApiInfo 
     { 
         Title = "FinanceApp API", 
         Version = "v1",
-        Description = "API para gerenciamento de finanças pessoais com autenticação JWT"
+        Description = "API para controle financeiro pessoal"
     });
 
-    // Configuração do JWT no Swagger
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    // Configuração do Bearer Token
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header usando Bearer scheme. Exemplo: 'Bearer {token}'",
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
 
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
@@ -59,15 +76,21 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configuração do pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "FinanceApp API v1");
+        // c.RoutePrefix = string.Empty; // Comentado para usar caminho padrão
+    });
 }
 
 app.UseHttpsRedirection();
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
