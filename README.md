@@ -4,7 +4,6 @@
 [![React](https://img.shields.io/badge/React-18.0-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0-blue.svg)](https://www.postgresql.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## Sobre o Projeto
 
@@ -41,19 +40,12 @@ O projeto segue os princípios da **Clean Architecture** e **SOLID**, organizado
 
 ```
 FinanceApp/
-├── FinanceApp.API          # Camada de apresentação (Controllers)
-├── FinanceApp.Application   # Camada de aplicação (Services, DTOs)
-├── FinanceApp.Domain        # Camada de domínio (Entities, Interfaces)
-├── FinanceApp.Data          # Camada de infraestrutura (DbContext, Repositories)
-└── Finance.Web              # Frontend React
+├── FinanceApp.API
+├── FinanceApp.Application
+├── FinanceApp.Domain
+├── FinanceApp.Data
+└── Finance.Web
 ```
-
-### Padrões de Projeto Implementados
-- **Repository Pattern**: Para acesso a dados
-- **Unit of Work**: Para transações de banco
-- **DTO Pattern**: Para transferência de dados
-- **Factory Pattern**: Para criação de entidades
-
 ## Pré-requisitos
 
 ### Backend
