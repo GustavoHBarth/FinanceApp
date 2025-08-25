@@ -99,6 +99,6 @@ npm run dev
 **Gustavo Henrique Barth**
 - GitHub: [GustavoHBarth](https://github.com/GustavoHBarth)
 - LinkedIn: [Gustavo Barth](https://www.linkedin.com/in/gustavo-henrique-barth)
-- Email: barthgustabo5@gmail.com
+- Email: barthgustavo5@gmail.com
 
 ---
