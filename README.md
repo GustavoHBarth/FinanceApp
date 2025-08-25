@@ -1,9 +1,9 @@
 # FinanceApp - Sistema de Gestão Financeira
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
-[![React](https://img.shields.io/badge/React-18.0-blue.svg)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15.0-blue.svg)](https://www.postgresql.org/)
+[![React](https://img.shields.io/badge/React-19.1-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
+[![SQL Server](https://img.shields.io/badge/SQL_Server-2022-blue.svg)](https://www.microsoft.com/sql-server)
 
 ## Sobre o Projeto
 
@@ -22,17 +22,32 @@ O **FinanceApp** é uma aplicação web completa para gestão financeira pessoal
 
 ### Backend (.NET 8)
 - **Framework**: ASP.NET Core 8.0
-- **ORM**: Entity Framework Core 8.0
-- **Banco de Dados**: PostgreSQL
-- **Autenticação**: JWT (JSON Web Tokens)
+- **ORM**: Entity Framework Core 9.0
+- **Banco de Dados**: SQL Server 2022
+- **Autenticação**: JWT (JSON Web Tokens) com Bearer Token
+- **Hash de Senhas**: BCrypt.Net-Next para criptografia segura
 - **Arquitetura**: Clean Architecture + Repository Pattern
+- **Documentação**: Swagger/OpenAPI com autenticação JWT
 
-### Frontend (React 18)
-- **Framework**: React 18 com TypeScript
-- **Estilização**: Styled Components
-- **Roteamento**: React Router v6
+### Frontend (React 19)
+- **Framework**: React 19.1 com TypeScript 5.6
+- **Estilização**: Styled Components 6.1
+- **Roteamento**: React Router v6.26
 - **Gerenciamento de Estado**: React Hooks + Context API
-- **Build Tool**: Vite
+- **Requisições HTTP**: Axios 1.6
+- **Ícones**: React Icons 5.5
+- **Build Tool**: Vite 7.1 com SWC
+
+### Banco de Dados
+- **SGBD**: SQL Server 2022
+- **Migrations**: Entity Framework Migrations
+- **Provider**: Microsoft.EntityFrameworkCore.SqlServer 9.0
+- **Configuração**: Connection string com Integrated Security
+
+### DevOps & Ferramentas
+- **Versionamento**: Git
+- **IDE**: Visual Studio 2022 / VS Code
+- **Package Manager**: NuGet (.NET) e npm (Node.js)
 
 ## Arquitetura
 
@@ -40,17 +55,25 @@ O projeto segue os princípios da **Clean Architecture** e **SOLID**, organizado
 
 ```
 FinanceApp/
-├── FinanceApp.API
-├── FinanceApp.Application
-├── FinanceApp.Domain
-├── FinanceApp.Data
-└── Finance.Web
+├── FinanceApp.API     
+├── FinanceApp.Application 
+├── FinanceApp.Domain  
+├── FinanceApp.Data   
+└── Finance.Web     
 ```
+
+### Padrões de Projeto Implementados
+- **Repository Pattern**: Para acesso a dados com Entity Framework
+- **Unit of Work**: Para transações de banco
+- **DTO Pattern**: Para transferência de dados entre camadas
+- **Factory Pattern**: Para criação de entidades
+- **Dependency Injection**: Para injeção de dependências
+
 ## Pré-requisitos
 
 ### Backend
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [PostgreSQL 15+](https://www.postgresql.org/download/)
+- [SQL Server 2022](https://www.microsoft.com/sql-server/sql-server-downloads) ou SQL Server Express
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) ou [VS Code](https://code.visualstudio.com/)
 
 ### Frontend
@@ -68,15 +91,30 @@ cd FinanceApp
 ### 2. Configuração do Backend
 ```bash
 cd FinanceApp.API
+
+# Restaure as dependências
 dotnet restore
+
+# Configure a string de conexão no appsettings.json
+# "ConnectionStrings": {
+#   "DefaultConnection": "Data Source=SEU_SERVIDOR\\SQLEXPRESS;Initial Catalog=FinanceAppDb;Integrated Security=True;MultipleActiveResultSets=true;TrustServerCertificate=True;"
+# }
+
+# Execute as migrations
 dotnet ef database update
+
+# Execute a aplicação
 dotnet run
 ```
 
 ### 3. Configuração do Frontend
 ```bash
 cd Finance.Web
+
+# Instale as dependências
 npm install
+
+# Execute a aplicação
 npm run dev
 ```
 
@@ -93,6 +131,13 @@ npm run dev
 - **Categorização**: Organização automática por categorias
 - **Filtros e Busca**: Sistema de filtros para organização dos dados
 - **Relatórios**: Geração de relatórios financeiros personalizados
+
+## Segurança
+
+- **Autenticação JWT**: Tokens seguros com expiração configurável
+- **Hash de Senhas**: BCrypt para criptografia segura de senhas
+- **CORS**: Configurado para permitir apenas o frontend autorizado
+- **HTTPS**: Redirecionamento automático para HTTPS em produção
 
 ## Autor
 
