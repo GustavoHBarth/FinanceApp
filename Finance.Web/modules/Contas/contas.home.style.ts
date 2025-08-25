@@ -21,21 +21,7 @@ export const ContasHeader = styled.div`
     .btn-icons {
         display: flex;
         gap: 12px;
-        border-radius: 50%;
-    }
-
-    .btn-icons button {
-        background: transparent;
-        color: var(--color-text-primary);
-        border: none;
-        cursor: pointer;
-        font-size: 30px;
-        padding: 8px;
-        transition: all 0.2s ease;
-
-        &:hover {
-            color: var(--color-primary);
-        }
+        align-items: center;
     }
 `;
 
@@ -70,28 +56,66 @@ export const ContasMonth = styled.div`
 `;
 
 export const ResumoContas = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
     margin-bottom: 24px;
-    padding: 16px;
-    background: var(--color-surface-1);
-    border-radius: 12px;
-    border: 1px solid var(--color-border);
 
     .wrapper {
-        flex: 1;
-        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 24px;
+        background: var(--color-surface-2);
+        border-radius: 12px;
+        border: 1px solid var(--color-border);
+        position: relative;
+
+        &:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background: var(--color-border);
+        }
 
         .valor {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             color: var(--color-text-primary);
+            margin-bottom: 8px;
         }
 
         .descricao {
             font-size: 14px;
-            color: var(--color-text-secondary)
+            color: var(--color-text-secondary);
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .subtitulo {
+            font-size: 12px;
+            color: var(--color-text-muted);
+            text-align: center;
+            margin-top: 8px;
+            font-style: italic;
+        }
+    }
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 20px;
+
+        .wrapper {
+            padding: 16px;
+
+            &:not(:last-child)::after {
+                display: none;
+            }
         }
     }
 `;
@@ -163,6 +187,22 @@ export const ContasTable = styled.div`
                 cursor: pointer;
                 transition: all 0.2s ease;
                 
+                &.btn-view {
+                    background: transparent;
+                    color: var(--color-text-secondary);
+                    padding: 6px 8px;
+                    border: 1px solid var(--color-border);
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    
+                    &:hover {
+                        background: var(--color-surface-2);
+                        border-color: var(--color-text-secondary);
+                        color: var(--color-text-secondary);
+                    }
+                }
+                
                 &.btn-edit {
                     background: var(--color-primary);
                     color: white;
@@ -184,5 +224,59 @@ export const ContasTable = styled.div`
         }
 
         
+    }
+`;
+
+export const FilterActionsContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    width: 100%;
+`;
+
+export const NovaContaButton = styled.button`
+    padding: 12px 24px;
+    background: var(--color-surface-1);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: center;
+
+    &:hover {
+        background: var(--color-surface-2);
+        border-color: var(--color-text-secondary);
+        color: var(--color-text-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+        background: var(--color-surface-2);
+        cursor: not-allowed;
+        opacity: 0.6;
+        border-color: var(--color-text-muted);
+        color: var(--color-text-muted);
+        transform: none;
+        box-shadow: none;
+    }
+
+    svg {
+        font-size: 16px;
+        flex-shrink: 0;
     }
 `;

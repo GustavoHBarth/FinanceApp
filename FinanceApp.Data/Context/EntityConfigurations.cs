@@ -32,7 +32,6 @@ namespace FinanceApp.Data.Context
                .HasForeignKey(c => c.UserId)
                .OnDelete(DeleteBehavior.Cascade);
 
-            // Relacionamento com parcelas - NO ACTION para evitar ciclos
             builder.HasMany(c => c.Parcelas)
                 .WithOne(p => p.Conta)
                 .HasForeignKey(p => p.ContaId)
@@ -82,7 +81,6 @@ namespace FinanceApp.Data.Context
 
             builder.HasIndex(u => u.Email).IsUnique();
 
-            // Relacionamento com parcelas - NO ACTION para evitar ciclos
             builder.HasMany(u => u.Parcelas)
                 .WithOne(p => p.User)
                 .HasForeignKey(p => p.UserId)
@@ -101,13 +99,11 @@ namespace FinanceApp.Data.Context
             builder.Property(p => p.Observacao).IsRequired(false);
             builder.Property(p => p.UserId).IsRequired();
 
-            // Relacionamento com Conta - NO ACTION para evitar ciclos
             builder.HasOne(p => p.Conta)
                 .WithMany(c => c.Parcelas)
                 .HasForeignKey(p => p.ContaId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // Relacionamento com User - NO ACTION para evitar ciclos
             builder.HasOne(p => p.User)
                 .WithMany(u => u.Parcelas)
                 .HasForeignKey(p => p.UserId)

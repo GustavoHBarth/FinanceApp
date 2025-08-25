@@ -59,10 +59,8 @@ namespace FinanceApp.API.Controllers
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            // Validação de parcelamento
             if (dto.EhParcelado)
             {
-                // Se for parcelado, TotalParcelas é obrigatório e deve ser entre 2 e 100
                 if (!dto.TotalParcelas.HasValue)
                 {
                     return BadRequest(new ApiResponse<object>
@@ -85,7 +83,6 @@ namespace FinanceApp.API.Controllers
             }
             else
             {
-                // Se não for parcelado, limpar campos relacionados
                 dto.TotalParcelas = null;
                 dto.DataPrimeiraParcela = null;
             }

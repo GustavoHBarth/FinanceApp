@@ -29,7 +29,6 @@ namespace FinanceApp.Application.Mapper
                 CreatedAt = entity.CreatedAt,
                 UpdatedAt = entity.UpdatedAt,
                 
-                // Propriedades de parcela
                 EhParcelado = entity.EhParcelado,
                 TotalParcelas = entity.Parcelas?.Count,
                 DataPrimeiraParcela = entity.Parcelas?.OrderBy(p => p.DataVencimento).FirstOrDefault()?.DataVencimento,

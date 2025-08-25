@@ -18,7 +18,6 @@ namespace FinanceApp.Application.DTOs
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         
-        // Propriedades de parcela
         public bool EhParcelado { get; set; }
         public int? TotalParcelas { get; set; }
         public DateTime? DataPrimeiraParcela { get; set; }

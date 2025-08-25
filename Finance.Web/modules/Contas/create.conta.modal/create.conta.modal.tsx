@@ -47,7 +47,7 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 	const handleInputChange = (field: keyof CreateContaRequest, value: any) => {
 		setFormData(prev => ({ ...prev, [field]: value }));
 		
-		// Limpar erro do campo quando usuário começa a digitar
+		
 		if (errors[field]) {
 			setErrors(prev => {
 				const newErrors = { ...prev };
@@ -98,24 +98,24 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 			
 			try {
 				console.log('Modal: Chamando onSubmit com dados:', JSON.stringify(formData, null, 2));
-				// Limpar dados antes de enviar (remover campos vazios)
+				
 				const dadosLimpos = {
 					titulo: formData.titulo,
 					descricao: formData.descricao?.trim() || undefined,
-					valor: Number(formData.valor), // Garantir que seja number
-					data: formData.data, // Formato YYYY-MM-DD
+					valor: Number(formData.valor),
+					data: formData.data,
 					dataVencimento: formData.dataVencimento?.trim() || undefined,
-					categoria: Number(formData.categoria), // Garantir que seja number
-					status: Number(formData.status) || EnumStatusConta.Pendente, // Converter para number
-					recorrencia: Number(formData.recorrencia) || EnumRecorrencia.Unica, // Converter para number
+					categoria: Number(formData.categoria),
+					status: Number(formData.status) || EnumStatusConta.Pendente,
+					recorrencia: Number(formData.recorrencia) || EnumRecorrencia.Unica,
 					numeroDocumento: formData.numeroDocumento?.trim() || undefined,
 					contaBancariaId: formData.contaBancariaId?.trim() || undefined,
-					ehParcelado: Boolean(formData.ehParcelado), // Garantir que seja boolean
+					ehParcelado: Boolean(formData.ehParcelado), 
 					totalParcelas: formData.ehParcelado ? Number(formData.totalParcelas) : undefined,
 					dataPrimeiraParcela: formData.ehParcelado ? formData.dataPrimeiraParcela : undefined
 				};
 				
-				// Criar objeto final apenas com campos válidos
+				
 				const dadosFinais: CreateContaRequest = {
 					titulo: dadosLimpos.titulo,
 					valor: dadosLimpos.valor,
@@ -126,7 +126,7 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 					ehParcelado: dadosLimpos.ehParcelado
 				};
 				
-				// Adicionar campos opcionais apenas se tiverem valor
+				
 				if (dadosLimpos.descricao) dadosFinais.descricao = dadosLimpos.descricao;
 				if (dadosLimpos.dataVencimento) dadosFinais.dataVencimento = dadosLimpos.dataVencimento;
 				if (dadosLimpos.numeroDocumento) dadosFinais.numeroDocumento = dadosLimpos.numeroDocumento;
@@ -136,7 +136,7 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 					dadosFinais.dataPrimeiraParcela = dadosLimpos.dataPrimeiraParcela;
 				}
 				
-				// Log adicional para verificar tipos
+				
 				console.log('Modal: Tipos dos dados:', {
 					titulo: typeof dadosFinais.titulo,
 					valor: typeof dadosFinais.valor,
@@ -149,12 +149,12 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				
 				console.log('Modal: Dados finais para envio (sem campos undefined):', JSON.stringify(dadosFinais, null, 2));
 				
-				// IMPORTANTE: Enviar dadosFinais, não formData
+				
 				const success = await onSubmit(dadosFinais);
 				console.log('Modal: Resposta do onSubmit:', success);
 				
 				if (success) {
-					// Reset form primeiro
+					
 					setFormData({
 						titulo: '',
 						descricao: '',
@@ -172,7 +172,7 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 					});
 					setErrors({});
 					
-					// Fechar modal após reset
+					
 					onClose();
 				}
 			} catch (error) {
@@ -196,10 +196,10 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 	
 	return (
 		<Modal
-		isOpen={isOpen}
-		onClose={onClose}
-		title="Nova Conta"
-		size="large"
+			isOpen={isOpen}
+			onClose={onClose}
+			title="Nova Conta"
+			size="large"
 		>
 		<FormContainer onSubmit={handleSubmit}>
 			<FormSection>
@@ -209,12 +209,12 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<Label htmlFor="titulo">Título *</Label>
 					<Input
-					id="titulo"
-					type="text"
-					value={formData.titulo}
-					onChange={(e) => handleInputChange('titulo', e.target.value)}
-					placeholder="Ex: Conta de luz"
-					error={!!errors.titulo}
+						id="titulo"
+						type="text"
+						value={formData.titulo}
+						onChange={(e) => handleInputChange('titulo', e.target.value)}
+						placeholder="Ex: Conta de luz"
+						error={!!errors.titulo}
 					/>
 					{errors.titulo && <ErrorMessage>{errors.titulo}</ErrorMessage>}
 				</FormGroup>
@@ -222,12 +222,12 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<Label htmlFor="valor">Valor *</Label>
 					<Input
-					id="valor"
-					type="text"
-					value={formatCurrency(formData.valor)}
-					onChange={(e) => handleInputChange('valor', parseCurrency(e.target.value))}
-					placeholder="R$ 0,00"
-					error={!!errors.valor}
+						id="valor"
+						type="text"
+						value={formatCurrency(formData.valor)}
+						onChange={(e) => handleInputChange('valor', parseCurrency(e.target.value))}
+						placeholder="R$ 0,00"
+						error={!!errors.valor}
 					/>
 					{errors.valor && <ErrorMessage>{errors.valor}</ErrorMessage>}
 				</FormGroup>
@@ -237,11 +237,11 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<Label htmlFor="descricao">Descrição</Label>
 					<Input
-					id="descricao"
-					type="text"
-					value={formData.descricao}
-					onChange={(e) => handleInputChange('descricao', e.target.value)}
-					placeholder="Descrição adicional (opcional)"
+						id="descricao"
+						type="text"
+						value={formData.descricao}
+						onChange={(e) => handleInputChange('descricao', e.target.value)}
+						placeholder="Descrição adicional (opcional)"
 					/>
 				</FormGroup>
 			
@@ -265,11 +265,11 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<Label htmlFor="data">Data *</Label>
 					<Input
-					id="data"
-					type="date"
-					value={formData.data}
-					onChange={(e) => handleInputChange('data', e.target.value)}
-					error={!!errors.data}
+						id="data"
+						type="date"
+						value={formData.data}
+						onChange={(e) => handleInputChange('data', e.target.value)}
+						error={!!errors.data}
 					/>
 					{errors.data && <ErrorMessage>{errors.data}</ErrorMessage>}
 				</FormGroup>
@@ -277,11 +277,11 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<Label htmlFor="dataVencimento">Data de Vencimento</Label>
 					<Input
-					id="dataVencimento"
-					type="date"
-					value={formData.dataVencimento}
-					onChange={(e) => handleInputChange('dataVencimento', e.target.value)}
-					placeholder="Data de vencimento (opcional)"
+						id="dataVencimento"
+						type="date"
+						value={formData.dataVencimento}
+						onChange={(e) => handleInputChange('dataVencimento', e.target.value)}
+						placeholder="Data de vencimento (opcional)"
 					/>
 				</FormGroup>
 			</FormRow>
@@ -294,13 +294,13 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 				<FormGroup>
 					<CheckboxContainer>
 						<Checkbox
-						id="ehParcelado"
-						type="checkbox"
-						checked={formData.ehParcelado}
-						onChange={(e) => handleInputChange('ehParcelado', e.target.checked)}
+							id="ehParcelado"
+							type="checkbox"
+							checked={formData.ehParcelado}
+							onChange={(e) => handleInputChange('ehParcelado', e.target.checked)}
 						/>
 						<CheckboxLabel htmlFor="ehParcelado">
-						Esta conta é parcelada
+							Esta conta é parcelada
 						</CheckboxLabel>
 					</CheckboxContainer>
 				</FormGroup>
@@ -311,12 +311,12 @@ export default function CreateContaModal({ isOpen, onClose, onSubmit }: CreateCo
 					<FormGroup>
 						<Label htmlFor="totalParcelas">Total de Parcelas</Label>
 						<Input
-						id="totalParcelas"
-						type="number"
-						min="2"
-						value={formData.totalParcelas}
-						onChange={(e) => handleInputChange('totalParcelas', parseInt(e.target.value))}
-						error={!!errors.totalParcelas}
+							id="totalParcelas"
+							type="number"
+							min="2"
+							value={formData.totalParcelas}
+							onChange={(e) => handleInputChange('totalParcelas', parseInt(e.target.value))}
+							error={!!errors.totalParcelas}
 						/>
 						{errors.totalParcelas && <ErrorMessage>{errors.totalParcelas}</ErrorMessage>}
 					</FormGroup>

@@ -1,18 +1,22 @@
 import { useState } from "react"
-import { ContasHeader, ContasMonth, ContasTable, ResumoContas, Whapper } from "./contas.home.style"
+import { ContasHeader, ContasMonth, ContasTable, ResumoContas, Whapper, NovaContaButton } from "./contas.home.style"
 import { useNavigate } from "react-router-dom"
 import { IoMdAddCircle } from 'react-icons/io'
-import { FaSearch } from "react-icons/fa";
+import { IoEye } from 'react-icons/io5'
+
 import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline } from "react-icons/io5"
 import { useContas } from "@/resources/hooks/useContas";
 import { Conta, Parcela, getCategoriaLabel, UpdateContaRequest } from "@/backend/dto";
 import CreateContaModal from "./create.conta.modal/create.conta.modal";
 import DeleteConfirmationModal from "./delete.conta.modal/delete.conta.modal";
 import EditContaModal from "./edit.conta.modal/edit.conta.modal";
+import ViewContaModal from "./view.conta.modal";
+import FilterConta, { FilterContaData } from "./filter.conta/filter.conta";
 
 export default function ContasPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<FilterContaData>({})
   const [deleteModalState, setDeleteModalState] = useState<{
     isOpen: boolean;
     conta: Conta | null;
@@ -21,6 +25,13 @@ export default function ContasPage() {
     conta: null
   })
   const [editModalState, setEditModalState] = useState<{
+    isOpen: boolean;
+    conta: Conta | null;
+  }>({
+    isOpen: false,
+    conta: null
+  })
+  const [viewModalState, setViewModalState] = useState<{
     isOpen: boolean;
     conta: Conta | null;
   }>({
@@ -43,6 +54,8 @@ export default function ContasPage() {
 
       const openModal = () => setIsModalOpen(true)
   const closeModal = () => setIsModalOpen(false)
+  
+
 
   const openDeleteModal = (conta: Conta) => {
     setDeleteModalState({
@@ -81,6 +94,20 @@ export default function ContasPage() {
     })
   }
 
+  const openViewModal = (conta: Conta) => {
+    setViewModalState({
+      isOpen: true,
+      conta
+    })
+  }
+
+  const closeViewModal = () => {
+    setViewModalState({
+      isOpen: false,
+      conta: null
+    })
+  }
+
   const handleEditConta = async (data: UpdateContaRequest): Promise<boolean> => {
     if (editModalState.conta) {
       const success = await updateConta(editModalState.conta.id, data)
@@ -92,12 +119,55 @@ export default function ContasPage() {
     return false
   }
 
+  const handleApplyFilters = (filters: FilterContaData) => {
+    setActiveFilters(filters)
+  }
+
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
     }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('pt-BR')
+    }
+
+    // Função para aplicar filtros às contas
+    const applyFilters = (contas: Conta[]) => {
+        if (Object.keys(activeFilters).length === 0) return contas
+        
+        return contas.filter(conta => {
+            // Filtro por título
+            if (activeFilters.titulo && !conta.titulo.toLowerCase().includes(activeFilters.titulo.toLowerCase())) {
+                return false
+            }
+            
+            // Filtro por categoria - tratar corretamente o valor 0 (Outros)
+            if (activeFilters.categoria !== undefined) {
+                // Se a categoria é 0 (Outros), verificar se a conta tem categoria 0 ou undefined/null
+                if (activeFilters.categoria === 0) {
+                    if (conta.categoria !== 0 && conta.categoria !== undefined && conta.categoria !== null) {
+                        return false
+                    }
+                } else {
+                    // Para outras categorias, verificar se são iguais
+                    if (conta.categoria !== activeFilters.categoria) {
+                        return false
+                    }
+                }
+            }
+            
+            // Filtro por data início
+            if (activeFilters.dataInicio && new Date(conta.data) < new Date(activeFilters.dataInicio)) {
+                return false
+            }
+            
+            // Filtro por data fim
+            if (activeFilters.dataFim && new Date(conta.data) > new Date(activeFilters.dataFim)) {
+                return false
+            }
+            
+            return true
+        })
     }
 
     // Função para gerar linhas da tabela baseada no mês selecionado
@@ -138,41 +208,76 @@ export default function ContasPage() {
         return rows
     }
 
-    const tableRows = generateTableRows(contas, selectedMonth.getMonth(), selectedMonth.getFullYear())
+    const filteredContas = applyFilters(contas)
+    const tableRows = generateTableRows(filteredContas, selectedMonth.getMonth(), selectedMonth.getFullYear())
     
     const calculateMonthTotals = () => {
         let totalContas = 0
         let totalParcelas = 0
+        let contasParceladas = 0
+        const contasParceladasIds = new Set<string>()
+        const categoriaGastos: Record<number, number> = {}
         
         tableRows.forEach(row => {
             if (row.isParcela && row.parcela) {
                 totalParcelas++
                 totalContas += row.parcela.valorParcela
+                
+                // Contar contas parceladas únicas
+                contasParceladasIds.add(row.conta.id)
+                
+                // Contar gastos por categoria
+                if (row.conta.categoria !== undefined) {
+                    categoriaGastos[row.conta.categoria] = (categoriaGastos[row.conta.categoria] || 0) + row.parcela.valorParcela
+                }
             } else {
                 totalContas += row.conta.valor
+                
+                // Contar gastos por categoria
+                if (row.conta.categoria !== undefined) {
+                    categoriaGastos[row.conta.categoria] = (categoriaGastos[row.conta.categoria] || 0) + row.conta.valor
+                }
             }
         })
         
-        return { totalContas, totalParcelas }
+        contasParceladas = contasParceladasIds.size
+        
+        // Encontrar categoria com mais gastos
+        let categoriaMaisGastos = { categoria: 0, valor: 0 }
+        Object.entries(categoriaGastos).forEach(([categoria, valor]) => {
+            if (valor > categoriaMaisGastos.valor) {
+                categoriaMaisGastos = { categoria: parseInt(categoria), valor }
+            }
+        })
+        
+        return { 
+            totalContas, 
+            totalParcelas, 
+            contasParceladas,
+            categoriaMaisGastos
+        }
     }
 
-    const { totalContas } = calculateMonthTotals()
+    const { totalContas, contasParceladas, categoriaMaisGastos } = calculateMonthTotals()
 
     return (
         <Whapper>
             <ContasHeader>
                 <h1>Contas</h1>
                 <div className="btn-icons">
-                    <button className="icon-btn-add" onClick={() => navigate('/')}>
-                        <FaSearch />
-                    </button>
-                    <button className="icon-btn-add" onClick={openModal} disabled={creating}>
+                    <NovaContaButton 
+                        onClick={openModal} 
+                        disabled={creating}
+                    >
                         {creating ? (
                             <span>...</span>
                         ) : (
-                            <IoMdAddCircle />
+                            <>
+                                <IoMdAddCircle />
+                                Nova Conta
+                            </>
                         )}
-                    </button>
+                    </NovaContaButton>
                 </div>
             </ContasHeader>
 
@@ -202,7 +307,34 @@ export default function ContasPage() {
                             Gastos do Mês
                         </div>
                     </div>
+                    
+                    {contasParceladas > 0 && (
+                        <div className="wrapper">
+                            <div className="valor">
+                                {contasParceladas}
+                            </div>
+                            <div className="descricao">
+                                {contasParceladas === 1 ? 'Conta parcelada' : 'Contas parceladas'} em andamento
+                            </div>
+                        </div>
+                    )}
+                    
+                    {categoriaMaisGastos.valor > 0 && (
+                        <div className="wrapper">
+                            <div className="valor">
+                                {getCategoriaLabel(categoriaMaisGastos.categoria)}
+                            </div>
+                            <div className="descricao">
+                                Categoria com maior gasto
+                            </div>
+                        </div>
+                    )}
             </ResumoContas>
+
+            <FilterConta
+                onApply={handleApplyFilters}
+                currentFilters={activeFilters}
+            />
                 
             <ContasTable>
                 <table className="contas-table">
@@ -242,12 +374,12 @@ export default function ContasPage() {
                                         )}
                                     </td>
                                     <td>
-                                        {row.conta.categoria ? (
+                                        {row.conta.categoria !== undefined && row.conta.categoria !== null ? (
                                             <span>
                                                 {getCategoriaLabel(row.conta.categoria)}
                                             </span>
                                         ) : (
-                                            <span>-</span>
+                                            <span>{getCategoriaLabel(0)}</span>
                                         )}
                                     </td>
                                     <td>
@@ -265,6 +397,13 @@ export default function ContasPage() {
                                           onClick={() => openDeleteModal(row.conta)}
                                         >
                                           Excluir
+                                        </button>
+                                        <button 
+                                          className="btn-view"
+                                          onClick={() => openViewModal(row.conta)}
+                                          title="Visualizar conta"
+                                        >
+                                          <IoEye />
                                         </button>
                                     </td>
                                 </tr>
@@ -309,6 +448,16 @@ export default function ContasPage() {
                 onSubmit={handleEditConta}
                 conta={editModalState.conta}
             />
+
+            {/* Modal de Visualização da Conta */}
+            {viewModalState.isOpen && viewModalState.conta && (
+                <ViewContaModal
+                    isOpen={viewModalState.isOpen}
+                    onClose={closeViewModal}
+                    conta={viewModalState.conta}
+                    onEdit={openEditModal}
+                />
+            )}
         </Whapper>
     )
 }

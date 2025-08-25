@@ -20,14 +20,11 @@ namespace FinanceApp.Application.Services
 
         public async Task<List<ContaDTO>> GetContas(Guid userId, int? month = null, int? year = null)
         {
-            // Buscar TODAS as contas do usuário com suas parcelas
-            // O filtro por mês será feito no frontend baseado nas datas de vencimento das parcelas
             var contas = await _contaRepository
                 .Where(c => c.UserId == userId && !c.SysIsDeleted)
-                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
+                .Include(c => c.Parcelas)
                 .ToListAsync();
 
-            // Converter para DTOs após incluir as parcelas
             return contas.Select(c => c.ToDTO()).ToList();
         }
 
@@ -35,7 +32,7 @@ namespace FinanceApp.Application.Services
         {
             var conta = await _contaRepository
                 .Where(c => c.Id == contaId && c.UserId == userId)
-                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
+                .Include(c => c.Parcelas)
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
@@ -62,7 +59,7 @@ namespace FinanceApp.Application.Services
 
             await _contaRepository.Add(conta);
 
-            // Se for parcelado, criar as parcelas automaticamente
+         
             if (dto.EhParcelado && dto.TotalParcelas.HasValue && dto.TotalParcelas.Value > 1)
             {
                 var parcelas = GerarParcelasAutomaticamente(conta, dto.TotalParcelas.Value, dto.DataPrimeiraParcela ?? dto.Data);
@@ -80,7 +77,7 @@ namespace FinanceApp.Application.Services
         {
             var conta = await _contaRepository
                 .Where(c => c.Id == id && c.UserId == userId)
-                .Include(c => c.Parcelas) // Incluir as parcelas relacionadas
+                .Include(c => c.Parcelas)
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
@@ -107,11 +104,11 @@ namespace FinanceApp.Application.Services
         {
             var conta = await _contaRepository
                 .Where(c => c.Id == id && c.UserId == userId)
-                .Include(c => c.Parcelas) // Incluir parcelas para verificar se existem
+                .Include(c => c.Parcelas)
                 .FirstOrDefaultAsync()
                 ?? throw new KeyNotFoundException("Conta não encontrada.");
 
-            // Se a conta tem parcelas e foi solicitado deletar todas
+
             if (deleteParcelas && conta.Parcelas != null && conta.Parcelas.Any())
             {
                 foreach (var parcela in conta.Parcelas)
@@ -128,7 +125,7 @@ namespace FinanceApp.Application.Services
             await _contaRepository.Update(conta); 
         }
 
-        // Método para gerar parcelas automaticamente
+  
         private List<Parcela> GerarParcelasAutomaticamente(Conta conta, int totalParcelas, DateTime dataPrimeiraParcela)
         {
             var parcelas = new List<Parcela>();
@@ -156,7 +153,7 @@ namespace FinanceApp.Application.Services
             return parcelas;
         }
 
-        // Método para calcular valor de cada parcela
+ 
         private decimal CalcularValorParcela(decimal valorTotal, int totalParcelas)
         {
             if (totalParcelas <= 0)
@@ -165,7 +162,6 @@ namespace FinanceApp.Application.Services
             return Math.Round(valorTotal / totalParcelas, 2);
         }
 
-        // Método para calcular data de vencimento de cada parcela
         private DateTime CalcularDataVencimento(DateTime dataPrimeiraParcela, int numeroParcela)
         {
             return dataPrimeiraParcela.AddMonths(numeroParcela - 1);

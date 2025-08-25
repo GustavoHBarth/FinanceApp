@@ -45,7 +45,7 @@ export default function EditContaModal({ isOpen, onClose, onSubmit, conta }: Edi
 	
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	
-	// Preencher formulário quando conta mudar
+	
 	useEffect(() => {
 		if (conta) {
 			setFormData({
@@ -70,7 +70,6 @@ export default function EditContaModal({ isOpen, onClose, onSubmit, conta }: Edi
 	const handleInputChange = (field: keyof UpdateContaRequest, value: any) => {
 		setFormData(prev => ({ ...prev, [field]: value }));
 		
-		// Limpar erro do campo quando usuário começa a digitar
 		if (errors[field]) {
 			setErrors(prev => {
 				const newErrors = { ...prev };
@@ -118,7 +117,7 @@ export default function EditContaModal({ isOpen, onClose, onSubmit, conta }: Edi
 			try {
 				console.log('Modal: Chamando onSubmit com dados:', JSON.stringify(formData, null, 2));
 				
-				// Limpar dados antes de enviar (remover campos vazios)
+				
 				const dadosLimpos = {
 					titulo: formData.titulo,
 					descricao: formData.descricao?.trim() || undefined,
@@ -135,7 +134,7 @@ export default function EditContaModal({ isOpen, onClose, onSubmit, conta }: Edi
 					dataPrimeiraParcela: formData.ehParcelado ? formData.dataPrimeiraParcela : undefined
 				};
 				
-				// Criar objeto final apenas com campos válidos
+				
 				const dadosFinais: UpdateContaRequest = {
 					titulo: dadosLimpos.titulo,
 					valor: dadosLimpos.valor,
@@ -146,7 +145,7 @@ export default function EditContaModal({ isOpen, onClose, onSubmit, conta }: Edi
 					ehParcelado: dadosLimpos.ehParcelado
 				};
 				
-				// Adicionar campos opcionais apenas se tiverem valor
+				
 				if (dadosLimpos.descricao) dadosFinais.descricao = dadosLimpos.descricao;
 				if (dadosLimpos.dataVencimento) dadosFinais.dataVencimento = dadosLimpos.dataVencimento;
 				if (dadosLimpos.numeroDocumento) dadosFinais.numeroDocumento = dadosLimpos.numeroDocumento;

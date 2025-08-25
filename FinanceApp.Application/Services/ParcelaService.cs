@@ -41,7 +41,6 @@ namespace FinanceApp.Application.Services
 
         public async Task<ParcelaDTO> CreateParcelaAsync(CreateParcelaRequestDTO dto, Guid userId)
         {
-            // Verificar se a conta existe e pertence ao usuário
             var conta = await _contaRepository
                 .Where(c => c.Id == dto.ContaId && c.UserId == userId && !c.SysIsDeleted)
                 .FirstOrDefaultAsync()

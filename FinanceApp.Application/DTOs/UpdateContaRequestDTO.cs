@@ -15,7 +15,6 @@ namespace FinanceApp.Application.DTOs
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
         
-        // Propriedades de parcelamento simplificadas
         public bool EhParcelado { get; set; }
         public int? TotalParcelas { get; set; }
         public DateTime? DataPrimeiraParcela { get; set; }

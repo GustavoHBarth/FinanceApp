@@ -29,7 +29,6 @@ export function useContas() {
     }
 
     const createConta = async (contaData: CreateContaRequest): Promise<boolean> => {
-        console.log('Hook: Iniciando criação de conta:', JSON.stringify(contaData, null, 2));
         setCreating(true)
         setError(null)
 
@@ -47,15 +46,15 @@ export function useContas() {
                 }
             }
             
-            console.log('Hook: Resposta da API:', response.data);
+
             
             if (response.data.success) {
-                console.log('Hook: Conta criada com sucesso, recarregando lista...');
+    
                 // Recarregar a lista de contas
                 await fetchContas()
                 return true
             } else {
-                console.log('Hook: Erro na resposta da API:', response.data.message);
+    
                 setError(response.data.message || 'Erro ao criar conta')
                 return false
             }
@@ -77,19 +76,18 @@ export function useContas() {
     }, [])
 
     const deleteConta = async (contaId: string, deleteParcelas: boolean = false): Promise<boolean> => {
-        console.log('Hook: Iniciando exclusão de conta:', contaId, 'deleteParcelas:', deleteParcelas);
         setError(null)
 
         try {
             const response = await api.delete(`/contas/${contaId}?deleteParcelas=${deleteParcelas}`)
-            console.log('Hook: Resposta da exclusão:', response.data);
+
 
             if (response.data.success) {
-                console.log('Hook: Conta excluída com sucesso, recarregando lista...');
+    
                 await fetchContas()
                 return true
             } else {
-                console.log('Hook: Erro na resposta da API:', response.data.message);
+    
                 setError(response.data.message || 'Erro ao excluir conta')
                 return false
             }
@@ -109,15 +107,15 @@ export function useContas() {
 
         try {
             const response = await api.put(`/contas/${contaId}`, data)
-            console.log('Hook: Resposta da edição:', response.data);
+
 
             if (response.data.success) {
-                console.log('Hook: Conta editada com sucesso, recarregando lista...');
+    
                 await fetchContas()
                 return true
             } 
             else {
-                console.log('Hook: erro na resposta da API', response.data.message);
+    
                 setError(response.data.message || 'Erro ao editar conta')
                 return false
             }
