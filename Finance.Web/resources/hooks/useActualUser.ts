@@ -8,11 +8,21 @@ export function useActualUser() {
 	const [loading, setLoading] = useState(true)
 	
 	const fetchMe = () => {
-		const token = localStorage.getItem('token')
-		if (!token) { setUser(null); setLoading(false); return }
 		setLoading(true)
 		api.get('/auth/me')
-		.then(r => setUser(r.data?.data ?? null))
+		.then(r => {
+			const u = r.data?.data
+			if (u) {
+				setUser({
+					id: String(u.id ?? ''),
+					name: typeof u.name === 'string' ? u.name : '',
+					email: typeof u.email === 'string' ? u.email : '',
+					createdAt: u.createdAt
+				})
+			} else {
+				setUser(null)
+			}
+		})
 		.catch(() => setUser(null))
 		.finally(() => setLoading(false))
 	}

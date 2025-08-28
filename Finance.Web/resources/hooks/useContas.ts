@@ -33,12 +33,10 @@ export function useContas() {
         setError(null)
 
         try {
-            // Tentar primeiro com /contas (POST padrão)
             let response;
             try {
                 response = await api.post<ContaResponse>('/contas', contaData)
             } catch (postError: any) {
-                // Se falhar, tentar com /contas/create
                 if (postError.status === 404) {
                     response = await api.post<ContaResponse>('/contas/create', contaData)
                 } else {
@@ -49,8 +47,6 @@ export function useContas() {
 
             
             if (response.data.success) {
-    
-                // Recarregar a lista de contas
                 await fetchContas()
                 return true
             } else {

@@ -1,6 +1,7 @@
 using FinanceApp.Application.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 
 namespace FinanceApp.API.Extensions
@@ -37,6 +38,23 @@ namespace FinanceApp.API.Extensions
                     ValidAudience = jwtConfig.Audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
+                };
+
+                // Permitir leitura do token a partir do cookie auth_token
+                x.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        if (string.IsNullOrEmpty(context.Token))
+                        {
+                            var tokenFromCookie = context.Request.Cookies["auth_token"]; 
+                            if (!string.IsNullOrEmpty(tokenFromCookie))
+                            {
+                                context.Token = tokenFromCookie;
+                            }
+                        }
+                        return Task.CompletedTask;
+                    }
                 };
             });
 

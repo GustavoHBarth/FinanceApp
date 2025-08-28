@@ -1,35 +1,33 @@
-import Header from '@/resources/components/Header/Header'
 import styled from 'styled-components';
+import SectionOne from '@/resources/components/Layout/Site/SectionOne'
+import SectionTwo from '@/resources/components/Layout/Site/SectionTwo'
+import SectionThree from '@/resources/components/Layout/Site/SectionThree'
+import SiteFooter from '@/resources/components/Layout/Site/SiteFooter'
 
 const Wrapper = styled.div`
-  background: var(--color-surface-1);
-  min-height: calc(100vh - 60px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Content = styled.div`
-  margin: 0 auto;
-  padding: 24px;
-  width: min(100%, 960px);
-  color: var(--color-text-primary);
+	background:
+		radial-gradient(600px 600px at 15% -200px, rgba(34,197,94,0.16) 0%, rgba(34,197,94,0.00) 60%),
+		radial-gradient(800px 800px at 85% -160px, rgba(34,197,94,0.10) 0%, rgba(34,197,94,0.00) 70%),
+		linear-gradient(180deg, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.00) 45%),
+		var(--color-surface-1);
 `
 
+const Content = styled.div``
+
 export default function HomePage() {
-  return (
-    <>
-      <Header />
-      <Wrapper>
-        <Content>
-          <h1 style={{ margin: 0, fontSize: 28 }}>Bem-vindo ao Finance App</h1>
-          <p style={{ marginTop: 8, color: 'var(--color-text-secondary)' }}>
-            Organize suas finanças com clareza e segurança.
-          </p>
-        </Content>
-      </Wrapper>
-    </>
-  )
+
+	return (
+		<>
+		<Wrapper>
+			<Content>
+				<SectionOne />
+				<SectionTwo />
+				<SectionThree />
+				<SiteFooter />
+			</Content>
+		</Wrapper>
+		</>
+	)
 }
 
 

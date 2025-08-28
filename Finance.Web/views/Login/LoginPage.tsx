@@ -8,23 +8,23 @@ export default function LoginPage() {
 	const navigate = useNavigate()
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
+
 	
 	async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 		
 		const r = await api.post('/auth/login', { email, password });
-		const { token, user } = r.data?.data ?? {};
+		const { token } = r.data?.data ?? {};
 		
 		if (token) {
-			localStorage.setItem('token', token)
-			localStorage.setItem('auth', 'true')
+			// Token agora é enviado via cookie HttpOnly pelo backend
 			window.dispatchEvent(new Event('auth-changed'))
 			navigate('/app', { replace: true })
 		} else {
 			alert('Resposta de login inválida');
 		}
 	}
-	
+
 	return (
 		<Wrapper>
 			<Content>
@@ -39,22 +39,27 @@ export default function LoginPage() {
 				
 				<Box>
 					<div className="titlelogin"> Faça login na sua conta</div>
-					
-					<form onSubmit={handleLogin}>
+					<form onSubmit={handleLogin} autoComplete="off">
 						<input 
+							id="login-email"
+							name="login-email"
 							placeholder="E-mail" 
 							value={email} 
+							autoComplete="off"
 							onChange={e => setEmail(e.target.value)} />
 						
 						<input 
+							id="login-password"
+							name="login-password"
 							placeholder="Senha" 
 							type="password" 
-							value={password} onChange={e => setPassword(e.target.value)} />
+							value={password}
+							autoComplete="new-password"
+							onChange={e => setPassword(e.target.value)} />
 						
 						<button type="submit">Entrar</button>
 					</form>
-					
-					<p className="accountCreate">Ainda não tem conta? <button className="create" type="button">Criar uma conta</button></p>
+					<p className="accountCreate">Ainda não tem conta? <button className="create" type="button" onClick={() => navigate('/register')}>Criar uma conta</button></p>
 				</Box>
 			</Content>
 		</Wrapper>

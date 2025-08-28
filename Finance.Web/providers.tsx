@@ -4,15 +4,15 @@ import { ThemeVariables } from '@/resources/styles/theme'
 import GlobalResets from '@/resources/styles/globals'
 
 export default function ApplicationProviders({ children }: { children: React.ReactNode }) {
-  return (
-    <BrowserRouter>
-      <ApplicationProvider>
-        <ThemeVariables />
-        <GlobalResets />
-        {children}
-      </ApplicationProvider>
-    </BrowserRouter>
-  )
+	return (
+		<BrowserRouter>
+			<ApplicationProvider>
+				<ThemeVariables />
+					<GlobalResets />
+						{children}
+			</ApplicationProvider>
+		</BrowserRouter>
+	)
 }
 
 

@@ -131,37 +131,30 @@ export default function ContasPage() {
         return new Date(dateString).toLocaleDateString('pt-BR')
     }
 
-    // Função para aplicar filtros às contas
     const applyFilters = (contas: Conta[]) => {
         if (Object.keys(activeFilters).length === 0) return contas
         
         return contas.filter(conta => {
-            // Filtro por título
             if (activeFilters.titulo && !conta.titulo.toLowerCase().includes(activeFilters.titulo.toLowerCase())) {
                 return false
             }
             
-            // Filtro por categoria - tratar corretamente o valor 0 (Outros)
             if (activeFilters.categoria !== undefined) {
-                // Se a categoria é 0 (Outros), verificar se a conta tem categoria 0 ou undefined/null
                 if (activeFilters.categoria === 0) {
                     if (conta.categoria !== 0 && conta.categoria !== undefined && conta.categoria !== null) {
                         return false
                     }
                 } else {
-                    // Para outras categorias, verificar se são iguais
                     if (conta.categoria !== activeFilters.categoria) {
                         return false
                     }
                 }
             }
             
-            // Filtro por data início
             if (activeFilters.dataInicio && new Date(conta.data) < new Date(activeFilters.dataInicio)) {
                 return false
             }
             
-            // Filtro por data fim
             if (activeFilters.dataFim && new Date(conta.data) > new Date(activeFilters.dataFim)) {
                 return false
             }
@@ -170,33 +163,28 @@ export default function ContasPage() {
         })
     }
 
-    // Função para gerar linhas da tabela baseada no mês selecionado
     const generateTableRows = (contas: Conta[], month: number, year: number) => {
         const rows: Array<{ conta: Conta; parcela?: Parcela; isParcela: boolean }> = []
         
         contas.forEach(conta => {
             if (conta.ehParcelado && conta.parcelas && conta.parcelas.length > 0) {
-                // Para contas parceladas, filtrar apenas parcelas que vencem no mês selecionado
                 const parcelasDoMes = conta.parcelas.filter(parcela => {
                     const parcelaDate = new Date(parcela.dataVencimento)
                     return parcelaDate.getMonth() === month && parcelaDate.getFullYear() === year
                 })
                 
                 if (parcelasDoMes.length > 0) {
-                    // Criar uma linha para cada parcela do mês
                     parcelasDoMes.forEach(parcela => {
                         rows.push({ conta, parcela, isParcela: true })
                     })
                 }
             } else {
-                // Para contas não parceladas, verificar se vencem no mês selecionado
                 if (conta.dataVencimento) {
                     const contaDate = new Date(conta.dataVencimento)
                     if (contaDate.getMonth() === month && contaDate.getFullYear() === year) {
                         rows.push({ conta, isParcela: false })
                     }
                 } else {
-                    // Se não tem data de vencimento, verificar se a data da conta é no mês selecionado
                     const contaDate = new Date(conta.data)
                     if (contaDate.getMonth() === month && contaDate.getFullYear() === year) {
                         rows.push({ conta, isParcela: false })
@@ -223,17 +211,14 @@ export default function ContasPage() {
                 totalParcelas++
                 totalContas += row.parcela.valorParcela
                 
-                // Contar contas parceladas únicas
                 contasParceladasIds.add(row.conta.id)
                 
-                // Contar gastos por categoria
                 if (row.conta.categoria !== undefined) {
                     categoriaGastos[row.conta.categoria] = (categoriaGastos[row.conta.categoria] || 0) + row.parcela.valorParcela
                 }
             } else {
                 totalContas += row.conta.valor
                 
-                // Contar gastos por categoria
                 if (row.conta.categoria !== undefined) {
                     categoriaGastos[row.conta.categoria] = (categoriaGastos[row.conta.categoria] || 0) + row.conta.valor
                 }
@@ -242,7 +227,6 @@ export default function ContasPage() {
         
         contasParceladas = contasParceladasIds.size
         
-        // Encontrar categoria com mais gastos
         let categoriaMaisGastos = { categoria: 0, valor: 0 }
         Object.entries(categoriaGastos).forEach(([categoria, valor]) => {
             if (valor > categoriaMaisGastos.valor) {
@@ -449,7 +433,6 @@ export default function ContasPage() {
                 conta={editModalState.conta}
             />
 
-            {/* Modal de Visualização da Conta */}
             {viewModalState.isOpen && viewModalState.conta && (
                 <ViewContaModal
                     isOpen={viewModalState.isOpen}

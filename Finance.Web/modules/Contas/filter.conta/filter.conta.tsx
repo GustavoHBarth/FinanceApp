@@ -47,12 +47,10 @@ export default function FilterConta({ onApply, currentFilters }: FilterContaProp
 
 	const handleSearchChange = (value: string) => {
 		handleInputChange('titulo', value);
-		// Aplicar filtro de título em tempo real
 		onApply({ ...filterData, titulo: value });
 	};
 
 	const handleApplyFilters = () => {
-		// Remove campos vazios/undefined antes de aplicar
 		const cleanFilters = Object.fromEntries(
 			Object.entries(filterData).filter(([_, value]) => 
 				value !== undefined && value !== '' && value !== null
@@ -90,6 +88,22 @@ export default function FilterConta({ onApply, currentFilters }: FilterContaProp
 					value={filterData.titulo || ''}
 					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
+				<Select
+					value={filterData.categoria ?? ''}
+					onChange={(e) => {
+						const value = e.target.value ? parseInt(e.target.value) : undefined
+						const next = { ...filterData, categoria: value }
+						setFilterData(next)
+						onApply(Object.fromEntries(Object.entries(next).filter(([_, v]) => v !== '' && v !== undefined && v !== null)) as any)
+					}}
+				>
+					<option value="">Todas as categorias</option>
+					{CategoriaContaOptions.map(option => (
+						<option key={option.value} value={option.value}>
+							{option.label}
+						</option>
+					))}
+				</Select>
 				<AdvancedFiltersButton 
 					onClick={toggleAdvancedFilters}
 					$isActive={showAdvancedFilters}

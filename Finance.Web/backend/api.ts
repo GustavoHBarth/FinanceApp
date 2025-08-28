@@ -15,6 +15,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   let token: string | null = null
   try {
+    
     token = getCookie('auth_token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null)
   } catch {}
 

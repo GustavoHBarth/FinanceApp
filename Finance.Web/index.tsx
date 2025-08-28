@@ -5,13 +5,13 @@ import ApplicationProviders from '@/providers'
 import ApplicationRoutes from '@/routes'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <ApplicationProviders>
-        <ApplicationRoutes />
-      </ApplicationProviders>
-    </ErrorBoundary>
-  </StrictMode>
+	<StrictMode>
+		<ErrorBoundary>
+			<ApplicationProviders>
+				<ApplicationRoutes />
+			</ApplicationProviders>
+		</ErrorBoundary>
+	</StrictMode>
 )
 
 
