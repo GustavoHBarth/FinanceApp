@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using TypeGen.Core.TypeAnnotations;
 
 namespace FinanceApp.Application.DTOs
 {
+    [ExportTsInterface]
     public class CreateParcelaRequestDTO
     {
         [Required]

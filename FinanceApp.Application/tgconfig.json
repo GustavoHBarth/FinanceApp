@@ -1,0 +1,11 @@
+{
+  "assemblies": [
+    "bin/Debug/net8.0/FinanceApp.Application.dll"
+  ],
+  "baseOutputDirectory": "X:/FinanceApp/Finance.Web/backend/dto.typegen",
+  "generateConstructors": false,
+  "enumStringInitializers": false,
+  "nullabilityMode": "Enabled"
+}
+
+

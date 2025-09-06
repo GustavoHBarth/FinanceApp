@@ -1,7 +1,9 @@
 ﻿using FinanceApp.Domain.Enums;
+using TypeGen.Core.TypeAnnotations;
 
 namespace FinanceApp.Application.DTOs
 {
+    [ExportTsInterface]
     public class ParcelaDTO
     {
         public Guid Id { get; set; }

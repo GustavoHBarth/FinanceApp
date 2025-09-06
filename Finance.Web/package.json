@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typegen:http": "openapi --input http://localhost:5089/swagger/v1/swagger.json --output ./backend/generated",
+    "typegen:https": "openapi --input https://localhost:7101/swagger/v1/swagger.json --output ./backend/generated"
   },
   "dependencies": {
     "axios": "^1.6.8",
@@ -21,6 +23,7 @@
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
+    "openapi-typescript-codegen": "^0.29.0",
     "typescript": "^5.6.3",
     "vite": "^7.1.2",
     "vite-tsconfig-paths": "^5.1.4"

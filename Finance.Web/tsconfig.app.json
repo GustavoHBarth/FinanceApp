@@ -18,7 +18,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@dto.typegen": ["./@dto.typegen"],
+      "@dto.typegen/*": ["./@dto.typegen/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

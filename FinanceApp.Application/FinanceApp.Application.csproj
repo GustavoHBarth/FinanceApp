@@ -14,6 +14,15 @@
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.0" />
+    <PackageReference Include="TypeGen" Version="5.0.0" />
   </ItemGroup>
+
+	<PropertyGroup>
+  <RunTypeGen Condition="'$(Configuration)' == 'Debug'">true</RunTypeGen>
+</PropertyGroup>
+
+<Target Name="TypeGenGenerate" AfterTargets="Build" Condition="'$(RunTypeGen)' == 'true'">
+  <Exec Command="dotnet-typegen generate -p &quot;$(MSBuildProjectDirectory)&quot; -c &quot;$(MSBuildProjectDirectory)\tgconfig.json&quot; --output-folder &quot;..\Finance.Web\backend\dto.typegen&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+</Target>
 
 </Project>

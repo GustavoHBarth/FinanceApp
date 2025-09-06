@@ -1,5 +1,8 @@
+using TypeGen.Core.TypeAnnotations;
+
 namespace FinanceApp.Application.DTOs
 {
+    [ExportTsInterface]
     public class UserDTO
     {
         public Guid Id { get; set; }

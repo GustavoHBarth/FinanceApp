@@ -1,8 +1,10 @@
 using FinanceApp.Domain.Enums;
+using TypeGen.Core.TypeAnnotations;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinanceApp.Application.DTOs
 {
+    [ExportTsInterface]
     public class CreateContaRequestDTO
     {
         public string Titulo { get; set; }

@@ -5,49 +5,10 @@ export const Whapper = styled.div`
     flex-direction: column;
     align-items: stretch;
     position: sticky;
-    top: 0;
-    min-height: 100vh;
+    top: 64px;
+    min-height: calc(100vh - 64px);
     width: min(220px, 100%);
     border-right: 1px solid var(--color-border);
-
-    .sep {
-        height: 1px;
-        width: 100%;
-        background: var(--color-border);
-        margin: 12px 0;
-        align-self: stretch;
-    }
-`;
-
-export const ProfileUser = styled.div`
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 12px 12px 0 12px;
-    justify-content: center;
-
-    p {
-        font-size: 27px;
-    }
-
-    button {
-        font-size: 20px;
-        background: transparent;
-        border: 0;
-        color: var(--color-text-primary);
-        cursor: pointer;
-    }
-
-`;
-
-export const AvatarUser = styled.div`
-
-    .img-avatar {
-        display: flex;
-        border-radius: 50px;
-        width: 40px;
-        height: 40px;
-   }
 `;
 
 export const Body = styled.div`
@@ -60,10 +21,12 @@ export const MenuButton = styled.div`
     display: flex;
     padding: 10px;
     gap: 15px;
-    font-size: 25px;
+    font-size: 20px;
     border-radius: 8px;
     color: var(--color-text-primary);
     cursor: pointer;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--neutral-700);
 
     &:hover {
         background: var(--color-elevated);

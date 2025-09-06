@@ -9,20 +9,17 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração de serviços
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IContaService, ContaService>();
 builder.Services.AddScoped<IReceitaService, ReceitaService>();
 builder.Services.AddScoped<IParcelaService, ParcelaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IResumoGeralService, ResumoGeralService>();
 
-// Configuração do banco de dados
 builder.Services.AddFinanceAppDatabase(builder.Configuration);
 
-// Configuração do JWT
 builder.Services.ConfigureJsonWebToken(builder.Configuration);
 
-// CORS para o frontend em http://localhost:5173
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
@@ -34,10 +31,8 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configuração de controllers
 builder.Services.AddControllers();
 
-// Configuração do Swagger com JWT
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -48,7 +43,7 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API para controle financeiro pessoal"
     });
 
-    // Configuração do Bearer Token
+    
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -76,16 +71,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configuração do pipeline HTTP
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "FinanceApp API v1");
-        // c.RoutePrefix = string.Empty; // Comentado para usar caminho padrão
     });
 }
+
+app.UseMiddleware<FinanceApp.API.Middlewares.ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseCors("Frontend");

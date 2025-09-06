@@ -1,14 +1,14 @@
-using FinanceApp.Application.DTOs;
 using FinanceApp.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using FinanceApp.Application.Responses;
 using System.Security.Claims;
+using FinanceApp.Application.DTOs.Receita;
 
 namespace FinanceApp.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("receitas")]
     [Authorize]
     public class ReceitaController : ControllerBase
     {
@@ -20,15 +20,15 @@ namespace FinanceApp.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReceitas()
+        public async Task<IActionResult> GetReceitas([FromQuery] ReceitaParamsDTO query, CancellationToken ct)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var receitas = await _receitaService.GetReceitas(userGuid);
+            var receitas = await _receitaService.GetReceitas(userGuid, query, ct);
 
-            return Ok(new ApiResponse<List<ReceitaDTO>>
+            return Ok(new ApiResponse<PagedResultDTO<ReceitaDTO>>
             {
                 Success = true,
                 Data = receitas

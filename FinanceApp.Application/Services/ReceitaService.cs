@@ -1,9 +1,11 @@
-using FinanceApp.Application.DTOs;
 using FinanceApp.Application.Services.Interfaces;
 using FinanceApp.Domain.Entities;
 using FinanceApp.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using FinanceApp.Application.Mapper;
+using FinanceApp.Application.Exceptions;
+using FinanceApp.Application.DTOs.Receita;
+using FinanceApp.Application.Responses;
 
 namespace FinanceApp.Application.Services
 {
@@ -16,14 +18,38 @@ namespace FinanceApp.Application.Services
             _receitaRepository = receitaRepository;
         }
 
-        public async Task<List<ReceitaDTO>> GetReceitas(Guid userId)
+        public async Task<PagedResultDTO<ReceitaDTO>> GetReceitas(Guid userId, ReceitaParamsDTO query, CancellationToken ct = default)
         {
-            var receitas = await _receitaRepository
-                .Where(r => r.UserId == userId)
-                .Select(r => r.ToDTO())
-                .ToListAsync();
+            var page = query.Page < 1 ? 1 : query.Page;
+            var size = query.PageSize <= 0 ? 20 : Math.Min(query.PageSize, 100);
 
-            return receitas;
+            var q = _receitaRepository.Where(r => r.UserId == userId);
+
+            if (query.DateFrom.HasValue) q = q.Where(r => r.Data >= query.DateFrom.Value);
+            if (query.DateTo.HasValue) q = q.Where(r => r.Data <= query.DateTo.Value);
+            if (query.Categoria.HasValue) q = q.Where(r => r.Categoria == query.Categoria.Value);
+            if (query.Status.HasValue) q = q.Where(r => r.Status == query.Status.Value);
+
+            var sort = (query.Sort ?? "data_desc").ToLowerInvariant();
+            q = sort switch
+            {
+                "data_asc" => q.OrderBy(r => r.Data),
+                "valor_asc" => q.OrderBy(r => r.Valor).ThenByDescending(r => r.Data),
+                "valor_desc" => q.OrderByDescending(r => r.Valor).ThenByDescending(r => r.Data),
+                "created_asc" => q.OrderBy(r => r.CreatedAt),
+                "created_desc" => q.OrderByDescending(r => r.CreatedAt),
+                _ => q.OrderByDescending(r => r.Data)
+            };
+
+            var total = await q.CountAsync(ct);
+
+            var items = await q.AsNoTracking()
+                .Skip((page - 1) * size)
+                .Take(size)
+                .Select(ReceitaMapper.ToDtoProjection)
+                .ToListAsync(ct);
+
+            return new PagedResultDTO<ReceitaDTO> { Items = items, Page = page, PageSize = size, Total = total };
         }
 
         public async Task<ReceitaDTO> GetReceitaById(Guid receitaId, Guid userId)
@@ -31,7 +57,7 @@ namespace FinanceApp.Application.Services
             var receita = await _receitaRepository
                 .Where(r => r.Id == receitaId && r.UserId == userId)
                 .FirstOrDefaultAsync()
-                ?? throw new KeyNotFoundException("Receita não encontrada.");
+                ?? throw new NotFoundException("Receita não encontrada.");
 
             return receita.ToDTO();
         }
@@ -64,7 +90,7 @@ namespace FinanceApp.Application.Services
             var receita = await _receitaRepository
                 .Where(r => r.Id == id && r.UserId == userId)
                 .FirstOrDefaultAsync()
-                ?? throw new KeyNotFoundException("Receita não encontrada.");
+                ?? throw new NotFoundException("Receita não encontrada.");
 
             receita.Titulo = dto.Titulo;
             receita.Descricao = dto.Descricao;
@@ -89,7 +115,7 @@ namespace FinanceApp.Application.Services
             var receita = await _receitaRepository
                 .Where(r => r.Id == id && r.UserId == userId)
                 .FirstOrDefaultAsync()
-                ?? throw new KeyNotFoundException("Receita não encontrada.");
+                ?? throw new NotFoundException("Receita não encontrada.");
 
             await _receitaRepository.Delete(receita);
         }

@@ -1,10 +1,11 @@
-using FinanceApp.Application.DTOs;
+using FinanceApp.Application.DTOs.Receita;
+using FinanceApp.Application.Responses;
 
 namespace FinanceApp.Application.Services.Interfaces
 {
     public interface IReceitaService
     {
-        Task<List<ReceitaDTO>> GetReceitas(Guid userId);
+        Task<PagedResultDTO<ReceitaDTO>> GetReceitas(Guid userId, ReceitaParamsDTO query, CancellationToken ct = default);
         Task<ReceitaDTO> CreateReceitaAsync(CreateReceitaRequestDTO dto, Guid userId);
         Task<ReceitaDTO> GetReceitaById(Guid receitaId, Guid userId);
         Task<ReceitaDTO> UpdateReceitaAsync(Guid id, UpdateReceitaRequestDTO dto, Guid userId);

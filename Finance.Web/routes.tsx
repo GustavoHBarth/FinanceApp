@@ -8,6 +8,7 @@ import RegisterPage from '@/views/Login/RegisterPage'
 import NotFound from '@/views/NotFound'
 import ContasPage from './modules/Contas/contas.home'
 import SaibaMaisPage from '@/views/SaibaMais'
+import ReceitasPage from './modules/Receitas/receitas.home'
 
 export default function ApplicationRoutes() {
 	return (
@@ -20,6 +21,7 @@ export default function ApplicationRoutes() {
 			<Route element={<ProtectedRoute />}>
 			<Route path="/app" element={<AppLayout />}>
 			<Route path="contas" element={<ContasPage />} />
+			<Route path="receitas" element={<ReceitasPage />} />
 			</Route>
 		</Route>
 		

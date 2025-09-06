@@ -1,8 +1,10 @@
     import { useNavigate } from 'react-router-dom'
     import { useActualUser } from '@/resources/hooks/useActualUser'
     import styled from 'styled-components';
-    import { FiLogOut } from 'react-icons/fi'
-    import api from '@/backend/api'
+    import { BiCog } from "react-icons/bi";
+    
+    import { useState } from "react";
+    import UserConfigModal from '@/modules/User/user.config.modal';
     
     const Whapper = styled.div<{ $variant: 'default' | 'floating' }>`
         position: sticky;
@@ -42,7 +44,8 @@
 
             .logo {
                 padding: 0;
-                margin: 0;
+                margin-right: 30px;
+
                 border: 0;
                 background: transparent;
                 cursor: pointer;
@@ -50,10 +53,15 @@
                 align-items: center;
 
                 img {
-                    height: 40px;
+                    height: 50px;
                     width: auto;
                     display: block;
                     background: transparent;
+                }
+
+                span {
+                    font-size: 22px;
+                    color: var(--color-text-primary)
                 }
             }
 
@@ -70,16 +78,8 @@
 
                 &:hover {
                     background: var(--neutral-800);
+                    border-radius: 10px;
                 }
-            }
-
-            .sep {
-                display: inline-block;        
-                width: 1px;                  
-                height: 20px;                 
-                background-color: var(--color-text-muted); 
-                margin: 0 8px;                
-                vertical-align: middle;          
             }
         `;
 
@@ -92,7 +92,7 @@
         text-transform: uppercase;  
         
 
-        .icon-btn {
+        .config-btn {
             background: transparent;
             border: 0;
             padding: 4px;
@@ -125,16 +125,7 @@
         const navigate = useNavigate()
         const { user } = useActualUser()
         const userName = user?.name ?? user?.email
-        
-        async function logout() {
-            try {
-                await api.post('/auth/logout')
-            } catch {}
-            // limpar qualquer resquício legado
-            try { localStorage.removeItem('token'); localStorage.setItem('auth', 'false') } catch {}
-            window.dispatchEvent(new Event('auth-changed'))
-            navigate('/', { replace: true })
-        }
+        const [isOpen, SetIsOpen] = useState(false);
         
         return (
             <>
@@ -146,18 +137,16 @@
                         <button className="logo" onClick={() => navigate('/')}
                             aria-label="Ir para a página inicial">
                             <img src="/minilogo_financeapp-convertido.svg" alt="Logo" />
+                            <span className="logo-text">FinanceApp</span>
                         </button>
-                        <button className="button" onClick={() => navigate('/')}>Home</button>
-                        <span className="sep"></span>
-                        <button className="button" onClick={() => navigate('/app')}>App</button>
                     </Left>
 
                     <Right>
                         {userName ? (
                             <>
                             <span>{userName}</span>
-                            <button className="icon-btn" onClick={logout}>
-                                <FiLogOut size={20} />
+                            <button className="config-btn" onClick={() => SetIsOpen(true)}> 
+                                <BiCog  size={20} />
                             </button>
                             </>
                         ) : (
@@ -166,6 +155,7 @@
                     </Right>
                 </div>
             </Whapper>
+            <UserConfigModal isOpen={isOpen} onClose={() => SetIsOpen(false)} />
             </>
         )
     }

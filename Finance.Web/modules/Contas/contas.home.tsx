@@ -247,7 +247,7 @@ export default function ContasPage() {
     return (
         <Whapper>
             <ContasHeader>
-                <h1>Contas</h1>
+                <h1>Despesas</h1>
                 <div className="btn-icons">
                     <NovaContaButton 
                         onClick={openModal} 

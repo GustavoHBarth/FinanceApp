@@ -20,12 +20,34 @@ namespace FinanceApp.Application.Services
 
         public async Task<List<ContaDTO>> GetContas(Guid userId, int? month = null, int? year = null)
         {
-            var contas = await _contaRepository
-                .Where(c => c.UserId == userId && !c.SysIsDeleted)
-                .Include(c => c.Parcelas)
-                .ToListAsync();
+            var query = _contaRepository
+                .Where(c => c.UserId == userId && !c.SysIsDeleted);
+                
+                if (month.HasValue || year.HasValue)
+                {
+                var effectiveYear = year ?? DateTime.Today.Year;
 
-            return contas.Select(c => c.ToDTO()).ToList();
+                    DateTime startDate;
+                    DateTime endDate;
+
+                    if (month.HasValue)
+                    {
+                        startDate = new DateTime(effectiveYear, month.Value, 1);
+                        endDate = startDate.AddMonths(1);
+                    }
+                    else
+                    {
+                        startDate = new DateTime(effectiveYear, 1, 1);
+                        endDate = startDate.AddYears(1);
+                    }
+
+                    query = query.Where(c => c.Data >= startDate && c.Data < endDate);
+                }
+
+                query = query.Include(c => c.Parcelas);
+
+                var contas = await query.ToListAsync();
+                return contas.Select(c => c.ToDTO()).ToList();
         }
 
         public async Task<ContaDTO> GetContasById(Guid contaId, Guid userId)

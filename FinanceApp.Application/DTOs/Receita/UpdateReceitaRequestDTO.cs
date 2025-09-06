@@ -1,8 +1,10 @@
 using FinanceApp.Domain.Enums;
+using TypeGen.Core.TypeAnnotations;
 
-namespace FinanceApp.Application.DTOs
+namespace FinanceApp.Application.DTOs.Receita
 {
-    public class CreateReceitaRequestDTO
+    [ExportTsInterface]
+    public class UpdateReceitaRequestDTO
     {
         public string Titulo { get; set; }
         public string? Descricao { get; set; }
@@ -10,7 +12,7 @@ namespace FinanceApp.Application.DTOs
         public DateTime Data { get; set; }
         public DateTime? DataRecebimento { get; set; }
         public EnumCategoriaReceita Categoria { get; set; }
-        public EnumStatusReceita Status { get; set; } = EnumStatusReceita.Pendente;
+        public EnumStatusReceita Status { get; set; }
         public EnumRecorrencia? Recorrencia { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
