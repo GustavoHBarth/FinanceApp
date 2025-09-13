@@ -6,6 +6,7 @@ using FinanceApp.Data.Context;
 using FinanceApp.API.Extensions;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using FinanceApp.API.Background;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,9 @@ builder.Services.AddScoped<IReceitaService, ReceitaService>();
 builder.Services.AddScoped<IParcelaService, ParcelaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IResumoGeralService, ResumoGeralService>();
+builder.Services.AddScoped<IRecorrenciaService, RecorrenciaService>();
+builder.Services.AddScoped<IRecorrenciaService, RecorrenciaService>();
+builder.Services.AddHostedService<RecorrenciasWorker>();
 
 builder.Services.AddFinanceAppDatabase(builder.Configuration);
 

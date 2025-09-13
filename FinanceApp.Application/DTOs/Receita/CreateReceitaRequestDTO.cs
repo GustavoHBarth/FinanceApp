@@ -13,8 +13,19 @@ namespace FinanceApp.Application.DTOs.Receita
         public DateTime? DataRecebimento { get; set; }
         public EnumCategoriaReceita Categoria { get; set; }
         public EnumStatusReceita Status { get; set; } = EnumStatusReceita.Pendente;
-        public EnumRecorrencia? Recorrencia { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
+        public RecorrenciaConfigDTO? RecorrenciaConfig { get; set; }
+    }
+
+    [ExportTsInterface]
+    public class RecorrenciaConfigDTO
+    {
+        public EnumRecorrencia TipoRecorrencia { get; set; }
+        public DateTime DataInicio { get; set; }
+        public DateTime? DataFim { get; set; }
+        public int? DiaDoMes { get; set; }
+        public DayOfWeek? DiaDaSemana { get; set; }
+        public bool GerarOcorrenciaInicial { get; set; } = true;
     }
 } 

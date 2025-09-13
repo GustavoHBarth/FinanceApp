@@ -7,6 +7,7 @@ namespace FinanceApp.Data.Context
     public class EntityConfigurations :
         IEntityTypeConfiguration<Conta>,
         IEntityTypeConfiguration<Receita>,
+        IEntityTypeConfiguration<ReceitaRecorrencia>,
         IEntityTypeConfiguration<ResumoMensal>,
         IEntityTypeConfiguration<User>,
         IEntityTypeConfiguration<Parcela>
@@ -45,19 +46,34 @@ namespace FinanceApp.Data.Context
             builder.Property(r => r.Titulo).IsRequired();
             builder.Property(r => r.Descricao).IsRequired(false);
 
-            builder.Property(r => r.Valor).IsRequired();
-            builder.Property(r => r.Data).IsRequired();
-            builder.Property(r => r.DataRecebimento).IsRequired(false);
+            builder.Property(r => r.Valor)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(r => r.Data)
+                .IsRequired();
+
+            builder.Property(r => r.DataRecebimento)
+                .IsRequired(false);
             builder.Property(r => r.Categoria).IsRequired();
             builder.Property(r => r.Status).IsRequired();
-            builder.Property(r => r.Recorrencia).IsRequired(false);
             builder.Property(r => r.NumeroDocumento).IsRequired(false);
             builder.Property(r => r.ContaBancariaId).IsRequired(false);
+            builder.Property(r => r.Competencia).IsRequired(false);
 
             builder.HasOne(r => r.User)
                 .WithMany(u => u.Receitas)
                 .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(r => r.RecorrenciaRegra)
+                .WithMany(rr => rr.Ocorrencias)
+                .HasForeignKey(r => r.RecorrenciaRegraId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasIndex(r => new { r.UserId, r.Data });
+            builder.HasIndex(r => new { r.UserId, r.CreatedAt });
+            builder.HasIndex(r => new { r.UserId, r.RecorrenciaRegraId, r.Competencia }).IsUnique(false);
         }
 
         public void Configure(EntityTypeBuilder<ResumoMensal> builder)
@@ -85,6 +101,11 @@ namespace FinanceApp.Data.Context
                 .WithOne(p => p.User)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasMany(u => u.ReceitaRecorrencias)
+                .WithOne(rr => rr.User)
+                .HasForeignKey(rr => rr.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public void Configure(EntityTypeBuilder<Parcela> builder)
@@ -108,6 +129,36 @@ namespace FinanceApp.Data.Context
                 .WithMany(u => u.Parcelas)
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
+        }
+
+        public void Configure(EntityTypeBuilder<ReceitaRecorrencia> builder)
+        {
+            builder.HasKey(rr => rr.Id);
+
+            builder.Property(rr => rr.TipoRecorrencia).IsRequired();
+            builder.Property(rr => rr.DataInicio).IsRequired();
+            builder.Property(rr => rr.DataFim).IsRequired(false);
+
+            builder.Property(rr => rr.DiaDoMes).IsRequired(false);
+            builder.Property(rr => rr.DiaDaSemana).IsRequired(false);
+
+            builder.Property(rr => rr.Titulo).IsRequired();
+            builder.Property(rr => rr.Descricao).IsRequired(false);
+
+            builder.Property(rr => rr.Valor)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(rr => rr.Categoria).IsRequired();
+            builder.Property(rr => rr.NumeroDocumento).IsRequired(false);
+            builder.Property(rr => rr.ContaBancariaId).IsRequired(false);
+
+            builder.Property(rr => rr.UltimaGeracao).IsRequired(false);
+            builder.Property(rr => rr.ProximoVencimento).IsRequired(false);
+            builder.Property(rr => rr.Ativa).IsRequired();
+
+            builder.HasIndex(rr => new { rr.UserId, rr.Ativa });
+            builder.HasIndex(rr => new { rr.UserId, rr.ProximoVencimento });
         }
     }
 }

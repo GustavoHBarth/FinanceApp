@@ -17,10 +17,16 @@ export const ReceitasHeader = styled.div`
         color: var(--color-text-primary);
         margin: 0;
     }
+
+    .add-btn{
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
 `;
 
 export const NovaReceitaButton = styled.button`
-     padding: 12px 24px;
+    padding: 12px 24px;
     background: var(--color-surface-1);
     color: var(--color-text-primary);
     border: 1px solid var(--color-border);
@@ -62,6 +68,46 @@ export const NovaReceitaButton = styled.button`
     svg {
         font-size: 16px;
         flex-shrink: 0;
+    }
+`;
+
+export const FiltroButton = styled.div`
+    padding: 12px 12px;
+    background: var(--color-surface-1);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    justify-content: center;
+
+    &:hover {
+        background: var(--color-surface-2);
+        border-color: var(--color-text-secondary);
+        color: var(--color-text-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+        background: var(--color-surface-2);
+        cursor: not-allowed;
+        opacity: 0.6;
+        border-color: var(--color-text-muted);
+        color: var(--color-text-muted);
+        transform: none;
+        box-shadow: none;
     }
 `;
 
@@ -109,10 +155,6 @@ export const ResumoReceitas = styled.div`
     
 `;
 
-export const FilterReceitas = styled.div`
-
-`;
-
 export const ReceitasTable = styled.div`
     background: var(--color-surface-1);
     border-radius: 12px;
@@ -132,6 +174,7 @@ export const ReceitasTable = styled.div`
                 vertical-align: middle;
                 color: var(--color-text-primary);
                 font-size: 14px;
+            
             }
             
             th {
@@ -141,10 +184,17 @@ export const ReceitasTable = styled.div`
                 letter-spacing: 0.5px;
                 border-bottom: 2px solid var(--color-border);
             }
+
+            /* Cabeçalho de Ações centralizado; células de Ações à direita */
+            thead th:last-child { text-align: center; width: 220px; }
+            tbody td:last-child { text-align: right; white-space: nowrap; width: 220px; }
         }
 
         .actions {
-            text-align: center;
+            text-align: right;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
 
             button {
                 display: inline-block;
@@ -231,6 +281,7 @@ export const ButtonPages = styled.div`
     .summary {
         color: var(--color-text-secondary);
         font-size: 12px;
+        align-items: center;
     }
 
     .pages {

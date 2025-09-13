@@ -22,12 +22,13 @@ export function useReceitas(selectedMonth: Date, page = 1, pageSize = 8, status?
                 pageSize,
                 dateFrom: `${start}T00:00:00`,
                 dateTo: `${end}T00:00:00`,
-                sort: 'data_desc',
+                sort: 'created_desc',
                 ...(status ? { status } : {})
             } as const;
-            const { data } = await api.get('/Receitas', { params });
+            const { data } = await api.get('/receitas', { params });
             const payload = data?.data ?? null;
-            setItems(payload?.items ?? []);
+            const serverItems = (payload?.items ?? []) as ReceitaDTO[];
+            setItems(serverItems);
             setTotal(payload?.total ?? 0);
         } finally {
             setLoading(false);
@@ -39,5 +40,10 @@ export function useReceitas(selectedMonth: Date, page = 1, pageSize = 8, status?
     }, [start, end, page, pageSize, status]);
 
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    return { receitas: items, loading, refetch, total, totalPages };
+    const deleteReceita = async (id: string) => {
+        await api.delete(`/receitas/${id}`);
+        await refetch();
+    };
+
+    return { receitas: items, loading, refetch, total, totalPages, deleteReceita };
 }

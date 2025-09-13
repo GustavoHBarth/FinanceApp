@@ -8,6 +8,7 @@ namespace FinanceApp.Data.Context
     {
         public DbSet<Conta> Contas { get; set; }
         public DbSet<Receita> Receitas { get; set; }
+        public DbSet<ReceitaRecorrencia> ReceitaRecorrencias { get; set; }
         public DbSet<ResumoMensal> ResumosMensais { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Parcela> Parcelas { get; set; }

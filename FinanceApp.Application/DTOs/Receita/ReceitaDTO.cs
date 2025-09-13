@@ -14,7 +14,6 @@ namespace FinanceApp.Application.DTOs.Receita
         public DateTime? DataRecebimento { get; set; }
         public EnumCategoriaReceita Categoria { get; set; }
         public EnumStatusReceita Status { get; set; }
-        public EnumRecorrencia? Recorrencia { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
         public DateTime CreatedAt { get; set; }

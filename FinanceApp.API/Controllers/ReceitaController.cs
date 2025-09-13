@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using FinanceApp.Application.Responses;
 using System.Security.Claims;
 using FinanceApp.Application.DTOs.Receita;
+using FinanceApp.Application.Services;
 
 namespace FinanceApp.API.Controllers
 {
@@ -12,11 +13,13 @@ namespace FinanceApp.API.Controllers
     [Authorize]
     public class ReceitaController : ControllerBase
     {
+        private readonly IRecorrenciaService _recorrenciaService;
         private readonly IReceitaService _receitaService;
 
-        public ReceitaController(IReceitaService receitaService)
+        public ReceitaController(IReceitaService receitaService, IRecorrenciaService recorrenciaService)
         {
             _receitaService = receitaService;
+            _recorrenciaService = recorrenciaService;
         }
 
         [HttpGet]
@@ -25,6 +28,8 @@ namespace FinanceApp.API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
+
+            await _recorrenciaService.GerarPendentes(userGuid, DateTime.UtcNow, ct);
 
             var receitas = await _receitaService.GetReceitas(userGuid, query, ct);
 
@@ -52,15 +57,15 @@ namespace FinanceApp.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateReceita([FromBody] CreateReceitaRequestDTO dto)
+        public async Task<IActionResult> CreateReceita([FromBody] CreateReceitaRequestDTO dto, CancellationToken ct)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var receita = await _receitaService.CreateReceitaAsync(dto, userGuid);
+            var receita = await _receitaService.CreateReceitaAsync(dto, userGuid, ct);
 
-            return Ok(new ApiResponse<ReceitaDTO>
+            return CreatedAtAction(nameof(GetReceitaById), new { id = receita.Id }, new ApiResponse<ReceitaDTO>
             {
                 Success = true,
                 Data = receita
@@ -68,13 +73,13 @@ namespace FinanceApp.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReceita(Guid id, [FromBody] UpdateReceitaRequestDTO dto)
+        public async Task<IActionResult> UpdateReceita(Guid id, [FromBody] UpdateReceitaRequestDTO dto, CancellationToken ct)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            var receita = await _receitaService.UpdateReceitaAsync(id, dto, userGuid);
+            var receita = await _receitaService.UpdateReceitaAsync(id, dto, userGuid, ct);
 
             return Ok(new ApiResponse<ReceitaDTO>
             {
@@ -84,13 +89,13 @@ namespace FinanceApp.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteReceita(Guid id)
+        public async Task<IActionResult> DeleteReceita(Guid id, CancellationToken ct)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
                 return Unauthorized();
 
-            await _receitaService.DeleteReceitaAsync(id, userGuid);
+            await _receitaService.DeleteReceitaAsync(id, userGuid, ct);
 
             return Ok(new ApiResponse<object>
             {

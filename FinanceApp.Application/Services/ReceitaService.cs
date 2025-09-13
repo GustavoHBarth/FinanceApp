@@ -6,16 +6,19 @@ using FinanceApp.Application.Mapper;
 using FinanceApp.Application.Exceptions;
 using FinanceApp.Application.DTOs.Receita;
 using FinanceApp.Application.Responses;
+using FinanceApp.Domain.Enums;
 
 namespace FinanceApp.Application.Services
 {
     public class ReceitaService : IReceitaService
     {
         public readonly IRepository<Receita> _receitaRepository;
+        private readonly IRepository<ReceitaRecorrencia> _recorrenciaRepository;
 
-        public ReceitaService(IRepository<Receita> receitaRepository)
+        public ReceitaService(IRepository<Receita> receitaRepository, IRepository<ReceitaRecorrencia> recorrenciaRepository)
         {
             _receitaRepository = receitaRepository;
+            _recorrenciaRepository = recorrenciaRepository;
         }
 
         public async Task<PagedResultDTO<ReceitaDTO>> GetReceitas(Guid userId, ReceitaParamsDTO query, CancellationToken ct = default)
@@ -56,40 +59,85 @@ namespace FinanceApp.Application.Services
         {
             var receita = await _receitaRepository
                 .Where(r => r.Id == receitaId && r.UserId == userId)
+                .AsNoTracking()
+                .Select(ReceitaMapper.ToDtoProjection)
                 .FirstOrDefaultAsync()
                 ?? throw new NotFoundException("Receita não encontrada.");
 
-            return receita.ToDTO();
+            return receita;
         }
 
-        public async Task<ReceitaDTO> CreateReceitaAsync(CreateReceitaRequestDTO dto, Guid userId)
+        public async Task<ReceitaDTO> CreateReceitaAsync(CreateReceitaRequestDTO dto, Guid userId, CancellationToken ct = default)
         {
-            var receita = new Receita
+            Guid? regraId = null;
+            ReceitaRecorrencia? regraLocal = null;
+            if (dto.RecorrenciaConfig is { } cfg && cfg.TipoRecorrencia != EnumRecorrencia.Unica)
             {
-                Id = Guid.NewGuid(),
-                Titulo = dto.Titulo,
-                Descricao = dto.Descricao,
-                Valor = dto.Valor,
-                Data = dto.Data,
-                DataRecebimento = dto.DataRecebimento,
-                Categoria = dto.Categoria,
-                Status = dto.Status,
-                Recorrencia = dto.Recorrencia,
-                NumeroDocumento = dto.NumeroDocumento,
-                ContaBancariaId = dto.ContaBancariaId,
-                UserId = userId
-            };
+                var regra = new ReceitaRecorrencia
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    TipoRecorrencia = cfg.TipoRecorrencia,
+                    DataInicio = cfg.DataInicio,
+                    DataFim = cfg.DataFim,
+                    DiaDoMes = cfg.DiaDoMes,
+                    DiaDaSemana = cfg.DiaDaSemana,
 
-            await _receitaRepository.Add(receita);
+                    // template da receita
+                    Titulo = dto.Titulo,
+                    Descricao = dto.Descricao,
+                    Valor = dto.Valor,
+                    Categoria = dto.Categoria,
+                    ContaBancariaId = dto.ContaBancariaId,
+                    NumeroDocumento = dto.NumeroDocumento,
+
+                    UltimaGeracao = null,
+                    ProximoVencimento = CalculateNextDueInitial(cfg, dto.Data),
+                    Ativa = true
+                };
+
+                await _recorrenciaRepository.Add(regra);
+                regraId = regra.Id;
+                regraLocal = regra; // manter a mesma instância rastreada pelo DbContext
+
+            }
+
+                var receita = new Receita
+                {
+                    Id = Guid.NewGuid(),
+                    Titulo = dto.Titulo,
+                    Descricao = dto.Descricao,
+                    Valor = dto.Valor,
+                    Data = dto.Data,
+                    DataRecebimento = dto.DataRecebimento,
+                    Categoria = dto.Categoria,
+                    Status = dto.Status,
+                    NumeroDocumento = dto.NumeroDocumento,
+                    ContaBancariaId = dto.ContaBancariaId,
+                    UserId = userId,
+                    Competencia = $"{dto.Data:MM/yyyy}",
+                    RecorrenciaRegraId = regraId
+                };
+
+                await _receitaRepository.Add(receita);
+
+                
+
+                if (regraLocal is not null)
+                {
+                    regraLocal.UltimaGeracao = DateTime.UtcNow;
+                    regraLocal.ProximoVencimento = CalculateNextDueAfter(dto.Data, dto.RecorrenciaConfig!);
+                    await _recorrenciaRepository.Update(regraLocal);
+                }
 
             return receita.ToDTO();
         }
 
-        public async Task<ReceitaDTO> UpdateReceitaAsync(Guid id, UpdateReceitaRequestDTO dto, Guid userId)
+        public async Task<ReceitaDTO> UpdateReceitaAsync(Guid id, UpdateReceitaRequestDTO dto, Guid userId, CancellationToken ct = default)
         {
             var receita = await _receitaRepository
                 .Where(r => r.Id == id && r.UserId == userId)
-                .FirstOrDefaultAsync()
+                .FirstOrDefaultAsync(ct)
                 ?? throw new NotFoundException("Receita não encontrada.");
 
             receita.Titulo = dto.Titulo;
@@ -99,9 +147,9 @@ namespace FinanceApp.Application.Services
             receita.DataRecebimento = dto.DataRecebimento;
             receita.Categoria = dto.Categoria;
             receita.Status = dto.Status;
-            receita.Recorrencia = dto.Recorrencia;
             receita.NumeroDocumento = dto.NumeroDocumento;
             receita.ContaBancariaId = dto.ContaBancariaId;
+            receita.Competencia = $"{dto.Data:MM/yyyy}";
             
             receita.Update();
 
@@ -110,14 +158,51 @@ namespace FinanceApp.Application.Services
             return receita.ToDTO();
         }
 
-        public async Task DeleteReceitaAsync(Guid id, Guid userId)
+        public async Task DeleteReceitaAsync(Guid id, Guid userId, CancellationToken ct = default)
         {
             var receita = await _receitaRepository
                 .Where(r => r.Id == id && r.UserId == userId)
-                .FirstOrDefaultAsync()
+                .FirstOrDefaultAsync(ct)
                 ?? throw new NotFoundException("Receita não encontrada.");
 
             await _receitaRepository.Delete(receita);
+        }
+
+        private static DateTime CalculateNextDueInitial(RecorrenciaConfigDTO cfg, DateTime dataSugestao)
+        {
+            return cfg.TipoRecorrencia switch
+            {
+                EnumRecorrencia.Mensal => GetMonthlyDate(cfg, dataSugestao),
+                EnumRecorrencia.Semanal => GetWeeklyDate(cfg, dataSugestao),
+                EnumRecorrencia.Anual => new DateTime(dataSugestao.Year, dataSugestao.Month, dataSugestao.Day),
+                _ => dataSugestao
+            };
+        }
+
+        private static DateTime CalculateNextDueAfter(DateTime baseDate, RecorrenciaConfigDTO cfg)
+        {
+            return cfg.TipoRecorrencia switch
+            {
+                EnumRecorrencia.Mensal => GetMonthlyDate(cfg, baseDate.AddMonths(1)),
+                EnumRecorrencia.Semanal => GetWeeklyDate(cfg, baseDate.AddDays(7)),
+                EnumRecorrencia.Anual => new DateTime(baseDate.Year + 1, baseDate.Month, baseDate.Day),
+                _ => baseDate
+            };
+        }
+
+        private static DateTime GetMonthlyDate(RecorrenciaConfigDTO cfg, DateTime seed)
+        {
+            var targetDay = cfg.DiaDoMes ?? seed.Day;
+            var lastDay = DateTime.DaysInMonth(seed.Year, seed.Month);
+            var day = Math.Min(targetDay, lastDay);
+            return new DateTime(seed.Year, seed.Month, day);
+        }
+
+        private static DateTime GetWeeklyDate(RecorrenciaConfigDTO cfg, DateTime seed)
+        {
+            var target = cfg.DiaDaSemana ?? seed.DayOfWeek;
+            int diff = ((int)target - (int)seed.DayOfWeek + 7) % 7;
+            return seed.Date.AddDays(diff == 0 ? 7 : diff);
         }
     }
 } 

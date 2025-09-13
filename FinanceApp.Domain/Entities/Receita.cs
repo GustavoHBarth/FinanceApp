@@ -1,11 +1,7 @@
 ﻿using FinanceApp.Domain.Entities.BaseEntities;
 using FinanceApp.Domain.Enums;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace FinanceApp.Domain.Entities
 {
@@ -19,12 +15,16 @@ namespace FinanceApp.Domain.Entities
         public DateTime? DataRecebimento { get; set; }
         public EnumCategoriaReceita Categoria { get; set; }
         public EnumStatusReceita Status { get; set; } = EnumStatusReceita.Pendente;
-        public EnumRecorrencia? Recorrencia { get; set; }
         public string? NumeroDocumento { get; set; }
         public Guid? ContaBancariaId { get; set; }
+
+        public string? Competencia { get; set; } // Formato "MM/yyyy"
 
         [Required]
         public Guid UserId { get; set; }
         public User User { get; set; }
+
+        public Guid? RecorrenciaRegraId { get; set; }
+        public ReceitaRecorrencia? RecorrenciaRegra { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using FinanceApp.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinanceApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250911133213_IndiceDoCreatedAt")]
+    partial class IndiceDoCreatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,9 +141,6 @@ namespace FinanceApp.Data.Migrations
                     b.Property<int>("Categoria")
                         .HasColumnType("int");
 
-                    b.Property<string>("Competencia")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<Guid?>("ContaBancariaId")
                         .HasColumnType("uniqueidentifier");
 
@@ -159,8 +159,8 @@ namespace FinanceApp.Data.Migrations
                     b.Property<string>("NumeroDocumento")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("RecorrenciaRegraId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int?>("Recorrencia")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -186,88 +186,11 @@ namespace FinanceApp.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RecorrenciaRegraId");
-
                     b.HasIndex("UserId", "CreatedAt");
 
                     b.HasIndex("UserId", "Data");
 
-                    b.HasIndex("UserId", "RecorrenciaRegraId", "Competencia");
-
                     b.ToTable("Receitas");
-                });
-
-            modelBuilder.Entity("FinanceApp.Domain.Entities.ReceitaRecorrencia", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("Ativa")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Categoria")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("ContaBancariaId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DataFim")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("DataInicio")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Descricao")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DiaDaSemana")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("DiaDoMes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NumeroDocumento")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ProximoVencimento")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("SysDeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("SysIsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("TipoRecorrencia")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Titulo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UltimaGeracao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId", "Ativa");
-
-                    b.HasIndex("UserId", "ProximoVencimento");
-
-                    b.ToTable("ReceitaRecorrencias");
                 });
 
             modelBuilder.Entity("FinanceApp.Domain.Entities.ResumoMensal", b =>
@@ -376,26 +299,8 @@ namespace FinanceApp.Data.Migrations
 
             modelBuilder.Entity("FinanceApp.Domain.Entities.Receita", b =>
                 {
-                    b.HasOne("FinanceApp.Domain.Entities.ReceitaRecorrencia", "RecorrenciaRegra")
-                        .WithMany("Ocorrencias")
-                        .HasForeignKey("RecorrenciaRegraId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("FinanceApp.Domain.Entities.User", "User")
                         .WithMany("Receitas")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("RecorrenciaRegra");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("FinanceApp.Domain.Entities.ReceitaRecorrencia", b =>
-                {
-                    b.HasOne("FinanceApp.Domain.Entities.User", "User")
-                        .WithMany("ReceitaRecorrencias")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -408,18 +313,11 @@ namespace FinanceApp.Data.Migrations
                     b.Navigation("Parcelas");
                 });
 
-            modelBuilder.Entity("FinanceApp.Domain.Entities.ReceitaRecorrencia", b =>
-                {
-                    b.Navigation("Ocorrencias");
-                });
-
             modelBuilder.Entity("FinanceApp.Domain.Entities.User", b =>
                 {
                     b.Navigation("Contas");
 
                     b.Navigation("Parcelas");
-
-                    b.Navigation("ReceitaRecorrencias");
 
                     b.Navigation("Receitas");
                 });

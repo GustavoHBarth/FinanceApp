@@ -20,6 +20,10 @@
     <ProjectReference Include="..\FinanceApp.Data\FinanceApp.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <RunTypeGen Condition="'$(Configuration)' == 'Debug'">true</RunTypeGen>
   </PropertyGroup>

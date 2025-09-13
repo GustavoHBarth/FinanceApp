@@ -1,20 +1,23 @@
-import Modal  from "@/resources/components/Modal"
-import React, { useState } from "react";
-import { CreateReceitaRequestDTO, } from "@/backend/dto.typegen/create-receita-request-dto"; 
-import { EnumCategoriaReceita } from "@/backend/dto.typegen/enum-categoria-receita";
-import { EnumStatusReceita } from "@/backend/dto.typegen/enum-status-receita";
-import { EnumRecorrencia } from "@/backend/dto.typegen/enum-recorrencia";
-import { Form, FormSection, SectionTitle, FormRow, Field, Actions, SubmitButton } from "./create.receita.modal.style"
+import React, { useState, useEffect } from 'react';
+import { Modal } from '@/resources/components';
+import type { ReceitaDTO } from '@/backend/dto.typegen/receita-dto';
+import { UpdateReceitaRequestDTO } from '@/backend/dto.typegen/update-receita-request-dto';
+import { EnumCategoriaReceita } from '@/backend/dto.typegen/enum-categoria-receita';
+import { EnumStatusReceita } from '@/backend/dto.typegen/enum-status-receita';
+import { EnumRecorrencia } from '@/backend/dto.typegen/enum-recorrencia';
+import { Form, FormSection, SectionTitle, FormRow, Field, Actions, SubmitButton } from "./edit.receita.modal.style"
 import { InputSelector, InputCurrency, InputText, InputDate } from "@/resources/components/Inputs";
- 
-interface CreateReceitaModalProps{
+
+interface EditReceitaModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit?: (data: any) => Promise<boolean> | boolean;
+    initialData?: ReceitaDTO | null;
+    onSubmit?: (data: UpdateReceitaRequestDTO) => Promise<boolean> | boolean;
 }
 
-export default function CreateReceitaModal({ isOpen, onClose, onSubmit}: CreateReceitaModalProps) {
-    const [formData, setFormData] = useState<CreateReceitaRequestDTO>({
+export default function EditReceitaModal({ isOpen, onClose, initialData, onSubmit}: EditReceitaModalProps) {
+
+    const [formData, setFormData] = useState<UpdateReceitaRequestDTO>({
         titulo: '',
         descricao: '',
         valor: 0,
@@ -25,28 +28,52 @@ export default function CreateReceitaModal({ isOpen, onClose, onSubmit}: CreateR
         recorrencia: EnumRecorrencia.Unica,
         numeroDocumento: '',
         contaBancariaId: ''
-    })
+    });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        if (!initialData) return;
+        try {
+            setFormData({
+                titulo: initialData.titulo ?? '',
+                descricao: initialData.descricao ?? '',
+                valor: Number(initialData.valor ?? 0),
+                data: new Date(initialData.data),
+                dataRecebimento: initialData.dataRecebimento ? new Date(initialData.dataRecebimento as any) : new Date(initialData.data),
+                categoria: initialData.categoria ?? EnumCategoriaReceita.Outros,
+                status: initialData.status ?? EnumStatusReceita.Pendente,
+                recorrencia: (initialData.recorrencia ?? EnumRecorrencia.Unica) as EnumRecorrencia,
+                numeroDocumento: initialData.numeroDocumento ?? '',
+                contaBancariaId: initialData.contaBancariaId ? String(initialData.contaBancariaId) : ''
+            });
+            setErrors({});
+        } catch {}
+    }, [isOpen, initialData]);
+
+    const handleInputChange = (field: keyof UpdateReceitaRequestDTO, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        if (errors[field as string]) {
+            setErrors(prev => {
+                const n = { ...prev };
+                delete n[field as string];
+                return n;
+            });
+        }
+    };
+
+    const isValidDate = (d: any) => d instanceof Date && !Number.isNaN(d.getTime());
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const newErrors: Record<string, string> = {};
-
-        if (!formData.titulo?.trim()) {
-            newErrors.titulo = "Título é obrigatório";
-        }
-
-        if (formData.valor === undefined || formData.valor === null || Number(formData.valor) <= 0) {
-            newErrors.valor = "Informe um valor maior que 0";
-        }
-
-        const isValidDate = (d: any) => d instanceof Date && !Number.isNaN(d.getTime());
-        if (!isValidDate(formData.data)) {
-            newErrors.data = "Data inválida";
-        }
-        if (!isValidDate(formData.dataRecebimento)) {
-            newErrors.dataRecebimento = "Data de recebimento inválida";
-        }
+        if (!formData.titulo?.trim()) newErrors.titulo = 'Título é obrigatório';
+        if (formData.valor === undefined || formData.valor === null || Number(formData.valor) <= 0) newErrors.valor = 'Informe um valor maior que 0';
+        if (!isValidDate(formData.data)) newErrors.data = 'Data inválida';
+        if (!isValidDate(formData.dataRecebimento)) newErrors.dataRecebimento = 'Data de recebimento inválida';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -67,57 +94,39 @@ export default function CreateReceitaModal({ isOpen, onClose, onSubmit}: CreateR
         }
     };
 
-    const [errors, setErrors] = useState<Record<string, string>>({});
-
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleInputChange = (field: keyof CreateReceitaRequestDTO, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-
-        if (errors[field]) {
-			setErrors(prev => {
-				const newErrors = { ...prev };
-				delete newErrors[field];
-				return newErrors;
-			});
-		}
-
-    };
-
     const categoryOptions = [
-        { value: EnumCategoriaReceita.Outros, title: "Outros" },
-        { value: EnumCategoriaReceita.Salario, title: "Salario" },
-        { value: EnumCategoriaReceita.Bonus, title: "Bonus" },
-        { value: EnumCategoriaReceita.Investimentos, title: "Investimentos" },
-        { value: EnumCategoriaReceita.Freelance, title: "Freelance" }
-    ]
+        { value: EnumCategoriaReceita.Outros, title: 'Outros' },
+        { value: EnumCategoriaReceita.Salario, title: 'Salario' },
+        { value: EnumCategoriaReceita.Bonus, title: 'Bonus' },
+        { value: EnumCategoriaReceita.Investimentos, title: 'Investimentos' },
+        { value: EnumCategoriaReceita.Freelance, title: 'Freelance' }
+    ];
 
     const recurrenceOptions = [
-        { value: EnumRecorrencia.Anual, title: "Anual"},
-        { value: EnumRecorrencia.Diaria, title: "Diária" },
-        { value: EnumRecorrencia.Semanal, title: "Semanal" },
-        { value: EnumRecorrencia.Quinzenal, title: "Quinzenal" },
-        { value: EnumRecorrencia.Mensal, title: "Mensal" },
-        { value: EnumRecorrencia.Bimestral, title: "Bimestral" },
-        { value: EnumRecorrencia.Trimestral, title: "Trimestral" },
-        { value: EnumRecorrencia.Semestral, title: "Semestral" },
-        { value: EnumRecorrencia.Anual, title: "Anual" }
-    ]
+        { value: EnumRecorrencia.Anual, title: 'Anual' },
+        { value: EnumRecorrencia.Diaria, title: 'Diária' },
+        { value: EnumRecorrencia.Semanal, title: 'Semanal' },
+        { value: EnumRecorrencia.Quinzenal, title: 'Quinzenal' },
+        { value: EnumRecorrencia.Mensal, title: 'Mensal' },
+        { value: EnumRecorrencia.Bimestral, title: 'Bimestral' },
+        { value: EnumRecorrencia.Trimestral, title: 'Trimestral' },
+        { value: EnumRecorrencia.Semestral, title: 'Semestral' },
+        { value: EnumRecorrencia.Anual, title: 'Anual' }
+    ];
 
     const statusOptions = [
-        { value: EnumStatusReceita.Pendente, title: "Pendente" },
-        { value: EnumStatusReceita.Recebido, title: "Recebido" },
-        { value: EnumStatusReceita.Cancelado, title: "Cancelado" }
-    ]
+        { value: EnumStatusReceita.Pendente, title: 'Pendente' },
+        { value: EnumStatusReceita.Recebido, title: 'Recebido' },
+        { value: EnumStatusReceita.Cancelado, title: 'Cancelado' }
+    ];
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            title="Nova Receita" 
-            size="large">
-
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Editar Receita"
+            size="large"
+        >
             <Form onSubmit={handleSubmit}>
                 <SectionTitle>Informações Básicas</SectionTitle>
                 <FormSection>
@@ -246,5 +255,4 @@ export default function CreateReceitaModal({ isOpen, onClose, onSubmit}: CreateR
             </Form>
         </Modal>
     )
-
 }

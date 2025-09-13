@@ -5,7 +5,6 @@
 
 import { EnumCategoriaReceita } from "./enum-categoria-receita";
 import { EnumStatusReceita } from "./enum-status-receita";
-import { EnumRecorrencia } from "./enum-recorrencia";
 
 export interface UpdateReceitaRequestDTO {
     titulo: string;
@@ -15,7 +14,6 @@ export interface UpdateReceitaRequestDTO {
     dataRecebimento: Date;
     categoria: EnumCategoriaReceita;
     status: EnumStatusReceita;
-    recorrencia: EnumRecorrencia;
     numeroDocumento: string;
     contaBancariaId: string;
 }
